@@ -1,0 +1,19 @@
+{$APP_DOMAIN} {
+  encode zstd gzip
+
+  request_body {
+    max_size 42MB
+  }
+
+  reverse_proxy app:8000
+
+  header {
+    -Server
+    Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+  }
+
+  log {
+    output stdout
+    format json
+  }
+}

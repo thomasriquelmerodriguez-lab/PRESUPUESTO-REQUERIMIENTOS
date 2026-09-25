@@ -1,0 +1,22 @@
+{$APP_DOMAIN} {
+  encode zstd gzip
+
+  request_body {
+    max_size 42MB
+  }
+
+  reverse_proxy app:8000
+
+  header {
+    -Server
+    Strict-Transport-Security "max-age=63072000; includeSubDomains"
+    X-Content-Type-Options "nosniff"
+    Referrer-Policy "strict-origin-when-cross-origin"
+    Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  }
+
+  log {
+    output stdout
+    format json
+  }
+}
