@@ -1,0 +1,21 @@
+VERIFICACIÓN DE LA ENTREGA
+Fecha: 06-08-2026
+
+Resultados ejecutados en el entorno de construcción:
+- 11 pruebas automatizadas aprobadas.
+- Compilación sintáctica de módulos Python aprobada.
+- Verificación sintáctica de todos los módulos JavaScript con Node aprobada.
+- Migración Alembic aplicada correctamente sobre una base vacía.
+- Semilla aplicada correctamente: 3 usuarios, 180 cuentas y 655 requerimientos.
+- Prueba de extremo a extremo aprobada: health, login, catálogo, registros y edición de Obligado CAS.
+- Configuración de seguridad de producción validada mediante Pydantic.
+
+No se ejecutó una construcción real de Docker porque Docker no está disponible en el entorno de generación. Los archivos Dockerfile y Docker Compose fueron revisados, pero deben validarse nuevamente en el servidor objetivo.
+
+Antes de producción todavía corresponde ejecutar:
+- análisis de dependencias y vulnerabilidades contra repositorios actualizados;
+- SAST/DAST;
+- prueba de penetración;
+- prueba de carga con la infraestructura definitiva;
+- prueba de respaldo y restauración PostgreSQL;
+- validación en los navegadores y dispositivos institucionales.

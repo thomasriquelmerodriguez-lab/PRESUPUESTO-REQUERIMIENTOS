@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <title>{{ app_name }}</title>
+  <link rel="stylesheet" href="/static/css/app.css">
+  <script type="module" src="/static/js/app.js"></script>
+</head>
+<body>
+  <div id="liveRegion" class="sr-only" aria-live="polite"></div>
+  <section id="loginView" class="login-shell" hidden>
+    <div class="login-card">
+      <img class="login-logo" src="/static/img/municipalidad-illapel.png" alt="Municipalidad de Illapel">
+      <h1>Sistema de requerimientos presupuestarios</h1>
+      <p>Acceso seguro para Municipal, Salud y Educación.</p>
+      <form id="loginForm" novalidate>
+        <fieldset class="login-users-fieldset">
+          <legend>Seleccione su usuario</legend>
+          <div id="loginUsers" class="login-user-list" role="radiogroup" aria-label="Usuarios disponibles">
+            <div class="progress-message">Cargando usuarios…</div>
+          </div>
+        </fieldset>
+        <label>Clave
+          <input id="loginPassword" type="password" required maxlength="128" autocomplete="current-password" inputmode="numeric">
+        </label>
+        <button class="button primary full" type="submit">Ingresar</button>
+        <p id="loginError" class="form-error" role="alert"></p>
+      </form>
+    </div>
+  </section>
+
+  <div id="appView" class="app-shell" hidden>
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-brand">
+        <span>Sistema presupuestario</span>
+        <strong id="activeAreaName">Municipal</strong>
+      </div>
+      <nav aria-label="Navegación principal">
+        <button data-page="request" class="nav-button active" type="button">Nuevo requerimiento</button>
+        <button data-page="records" class="nav-button" type="button">Registros guardados</button>
+        <button data-page="budget" class="nav-button" type="button">Presupuesto vigente</button>
+        <button data-page="import" class="nav-button" type="button">Actualizar presupuesto</button>
+        <button data-page="audit" id="auditNav" class="nav-button" type="button" hidden>Auditoría</button>
+        <button data-page="users" id="usersNav" class="nav-button" type="button" hidden>Usuarios y privilegios</button>
+      </nav>
+      <div class="sidebar-user">
+        <span id="currentUser"></span>
+        <button id="logoutButton" class="button ghost full" type="button">Cerrar sesión</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-row">
+          <button id="menuButton" class="icon-button" type="button" aria-label="Abrir menú" aria-controls="sidebar">☰</button>
+          <div>
+            <h1 id="pageTitle">Nuevo requerimiento</h1>
+            <p id="connectionStatus">Conectado</p>
+          </div>
+          <label class="area-control">Área
+            <select id="areaSelect"></select>
+          </label>
+        </div>
+        <img class="top-logo" src="/static/img/municipalidad-illapel.png" alt="Municipalidad de Illapel">
+      </header>
+
+      <div class="content">
+        <section id="page-request" class="page active">
+          <div id="metrics" class="metrics" aria-label="Resumen presupuestario"></div>
+          <article class="panel">
+            <div class="panel-heading"><div><h2>Datos de la solicitud</h2><p>Los campos marcados son obligatorios.</p></div><span id="editBadge" class="badge" hidden>Edición activa</span></div>
+            <form id="requirementForm" novalidate>
+              <input id="requirementId" type="hidden">
+              <input id="requirementVersion" type="hidden">
+              <div class="form-grid five">
+                <label>Año presupuestario *<select id="requestYear" required></select></label>
+                <label>Fecha *<input id="requestDate" type="date" required></label>
+                <label>N.º de expediente *<input id="expedient" maxlength="120" required></label>
+                <label class="span-2">Materia *<input id="subject" maxlength="1000" required></label>
+                <label>Monto del requerimiento *<input id="amount" type="number" min="1" step="1" required></label>
+              </div>
+              <div class="form-grid three">
+                <label>Departamento<input id="department" maxlength="250"></label>
+                <label>Área de gestión<input id="managementArea" maxlength="250"></label>
+                <label>Observaciones<textarea id="notes" maxlength="5000" rows="2"></textarea></label>
+              </div>
+              <div class="account-picker">
+                <label>Cuenta matriz *<select id="requestMatrix" required></select></label>
+                <label>Buscar cuenta<input id="requestAccountSearch" type="search" maxlength="120" placeholder="Número o denominación"></label>
+                <label class="span-2">Cuenta presupuestaria *<select id="requestAccount" required></select></label>
+              </div>
+              <div id="accountSummary" class="callout" aria-live="polite">Seleccione una cuenta presupuestaria.</div>
+              <label id="overBudgetBox" class="checkbox-row" hidden><input id="allowOverBudget" type="checkbox"> Autorizar registro sobre el disponible</label>
+              <label id="overBudgetReasonBox" hidden>Motivo de autorización<textarea id="overBudgetReason" maxlength="500"></textarea></label>
+              <div class="form-actions">
+                <button id="cancelEditButton" class="button secondary" type="button" hidden>Cancelar edición</button>
+                <button class="button primary" type="submit">Guardar requerimiento</button>
+              </div>
+              <p id="requirementError" class="form-error" role="alert"></p>
+            </form>
+          </article>
+        </section>
+
+        <section id="page-records" class="page">
+          <article class="panel">
+            <div class="panel-heading"><div><h2>Registros guardados</h2><p>Filtre por área, año y jerarquía presupuestaria.</p></div><div class="button-row"><button id="recordsCsv" class="button secondary" type="button">Exportar CSV</button><button id="recordsReport" class="button primary" type="button" disabled>Generar reporte</button></div></div>
+            <div class="filters four">
+              <label>Año<select id="recordsYear"><option value="">Todos</option></select></label>
+              <label>Cuenta matriz<select id="recordsMatrix"><option value="">Todas</option></select></label>
+              <label>Cuenta específica<select id="recordsAccount"><option value="">Todas</option></select></label>
+              <label>Buscar<input id="recordsSearch" type="search" maxlength="120"></label>
+            </div>
+            <div id="recordsSummary" class="summary-line"></div>
+            <div id="recordsList" class="data-list"></div>
+            <div class="pagination"><button id="recordsPrev" class="button ghost" type="button">Anterior</button><span id="recordsPage"></span><button id="recordsNext" class="button ghost" type="button">Siguiente</button></div>
+          </article>
+        </section>
+
+        <section id="page-budget" class="page">
+          <div id="budgetMetrics" class="metrics"></div>
+          <article class="panel">
+            <div class="panel-heading"><div><h2>Cuentas y presupuesto vigente</h2><p>Obligado CAS se habilita solo al seleccionar una cuenta.</p></div><button id="budgetCsv" class="button secondary" type="button">Exportar presupuesto</button></div>
+            <div class="filters three">
+              <label>Año<select id="budgetYear"></select></label>
+              <label>Cuenta matriz<select id="budgetMatrix"><option value="">Todas</option></select></label>
+              <label>Buscar<input id="budgetSearch" type="search" maxlength="120"></label>
+            </div>
+            <div class="level-legend" aria-label="Niveles de cuentas"><span class="level-0">Matriz</span><span class="level-1">Nivel 1</span><span class="level-2">Nivel 2</span><span class="level-3">Nivel 3</span><span class="level-4">Nivel 4</span></div>
+            <div id="budgetList" class="data-list"></div>
+          </article>
+        </section>
+
+        <section id="page-import" class="page">
+          <article id="yearsPanel" class="panel">
+            <div class="panel-heading"><div><h2>Años presupuestarios</h2><p>Cree nuevos años por área y luego cargue el presupuesto correspondiente.</p></div></div>
+            <form id="budgetYearForm" class="upload-form">
+              <label>Nuevo año presupuestario<input id="newBudgetYear" type="number" min="2020" max="2100" step="1" placeholder="Ej. 2027" required></label>
+              <button class="button primary" type="submit">Agregar año</button>
+            </form>
+            <div id="budgetYearsList" class="data-list"></div>
+          </article>
+          <article id="budgetImportPanel" class="panel">
+            <div class="panel-heading"><div><h2>Cargar o actualizar presupuesto</h2><p>Seleccione un año previamente creado. La validación y aplicación se realizan en el servidor.</p></div><div class="button-row"><button id="downloadTemplate" class="button secondary" type="button">Plantilla CSV</button><button id="backupExport" class="button secondary" type="button">Descargar respaldo</button></div></div>
+            <form id="budgetImportForm" class="upload-form">
+              <label>Año a actualizar<select id="importYear" required></select></label>
+              <label>Planilla Excel o CSV<input id="budgetFile" type="file" accept=".xlsx,.xls,.csv,.txt" required></label>
+              <button class="button primary" type="submit">Revisar planilla</button>
+            </form>
+            <div id="importProgress" class="progress-message" hidden>Procesando planilla…</div>
+            <div id="importPreview" hidden></div>
+          </article>
+          <article id="backupImportPanel" class="panel">
+            <div class="panel-heading"><div><h2>Restaurar respaldo</h2><p>Importe un respaldo generado por esta versión.</p></div></div>
+            <form id="backupImportForm" class="upload-form">
+              <label>Archivo JSON<input id="backupFile" type="file" accept=".json" required></label>
+              <label class="checkbox-row"><input id="backupReplace" type="checkbox"> Reemplazar registros de los años incluidos</label>
+              <button class="button secondary" type="submit">Importar respaldo</button>
+            </form>
+          </article>
+          <article id="versionsPanel" class="panel"><div class="panel-heading"><div><h2>Versiones disponibles</h2><p>Historial de presupuestos por año.</p></div></div><div id="versionsList" class="data-list"></div></article>
+        </section>
+
+        <section id="page-audit" class="page">
+          <article class="panel">
+            <div class="panel-heading"><div><h2>Auditoría y trazabilidad</h2><p>Acciones, usuario, fecha, IP, navegador y resultado.</p></div></div>
+            <div class="filters three"><label>Área<select id="auditArea"><option value="">Todas</option><option value="municipal">Municipal</option><option value="salud">Salud</option><option value="educacion">Educación</option></select></label><label>Acción<input id="auditAction" maxlength="100"></label><label>Buscar<input id="auditSearch" maxlength="120"></label></div>
+            <div id="auditList" class="data-list"></div>
+          </article>
+        </section>
+
+        <section id="page-users" class="page">
+          <article class="panel">
+            <div class="panel-heading">
+              <div><h2 id="userFormTitle">Crear nuevo usuario</h2><p>Asigne áreas y privilegios específicos. Las validaciones se aplican también en el servidor.</p></div>
+              <span id="userEditBadge" class="badge" hidden>Edición activa</span>
+            </div>
+            <form id="userForm" novalidate>
+              <input id="userId" type="hidden">
+              <div class="form-grid three">
+                <label>Nombre del usuario *<input id="userDisplayName" maxlength="120" required></label>
+                <label id="userPasswordLabel">Clave inicial *<input id="userPassword" type="password" minlength="4" maxlength="128" autocomplete="new-password" required></label>
+                <label class="checkbox-card"><input id="userActive" type="checkbox" checked> Usuario activo</label>
+              </div>
+              <fieldset class="permission-fieldset">
+                <legend>Áreas permitidas</legend>
+                <div class="choice-grid three">
+                  <label class="choice-card"><input type="checkbox" name="userArea" value="municipal"> Municipal</label>
+                  <label class="choice-card"><input type="checkbox" name="userArea" value="salud"> Salud</label>
+                  <label class="choice-card"><input type="checkbox" name="userArea" value="educacion"> Educación</label>
+                </div>
+              </fieldset>
+              <fieldset class="permission-fieldset">
+                <legend>Privilegios dentro de la aplicación</legend>
+                <div class="permission-toolbar">
+                  <button id="selectAllPermissions" class="button secondary" type="button">Seleccionar todos</button>
+                  <button id="clearPermissions" class="button ghost" type="button">Quitar todos</button>
+                </div>
+                <div id="permissionsList" class="permissions-list"></div>
+              </fieldset>
+              <div class="form-actions">
+                <button id="cancelUserEdit" class="button secondary" type="button" hidden>Cancelar edición</button>
+                <button class="button primary" type="submit">Guardar usuario</button>
+              </div>
+              <p id="userError" class="form-error" role="alert"></p>
+            </form>
+          </article>
+          <article class="panel">
+            <div class="panel-heading"><div><h2>Usuarios disponibles</h2><p>Edite permisos, áreas, estado o restablezca la clave.</p></div></div>
+            <div id="usersList" class="data-list"></div>
+          </article>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <dialog id="recordDialog" class="dialog"><form method="dialog"><button class="dialog-close" aria-label="Cerrar">×</button></form><div id="recordDialogContent"></div></dialog>
+  <dialog id="passwordDialog" class="dialog small-dialog">
+    <form id="passwordForm">
+      <button class="dialog-close" type="button" id="closePasswordDialog" aria-label="Cerrar">×</button>
+      <h2>Restablecer clave</h2>
+      <p id="passwordTarget" class="meta"></p>
+      <input id="passwordUserId" type="hidden">
+      <label>Nueva clave *<input id="newUserPassword" type="password" minlength="4" maxlength="128" autocomplete="new-password" required></label>
+      <div class="form-actions"><button class="button primary" type="submit">Guardar nueva clave</button></div>
+      <p id="passwordError" class="form-error" role="alert"></p>
+    </form>
+  </dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

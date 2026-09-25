@@ -1,0 +1,94 @@
+name: sistema_requerimientos_online
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: presupuesto
+      POSTGRES_USER: presupuesto
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U presupuesto -d presupuesto"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    security_opt:
+      - no-new-privileges:true
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      ENVIRONMENT: production
+      APP_ORIGIN: ${APP_ORIGIN:?Defina APP_ORIGIN con https}
+      DATABASE_URL: postgresql+psycopg://presupuesto:${POSTGRES_PASSWORD}@db:5432/presupuesto
+      SECRET_KEY: ${SECRET_KEY:?Defina SECRET_KEY aleatoria}
+      INITIAL_PASSWORD: ${INITIAL_PASSWORD:?Defina una clave inicial temporal}
+      SESSION_IDLE_MINUTES: ${SESSION_IDLE_MINUTES:-30}
+      SESSION_ABSOLUTE_HOURS: ${SESSION_ABSOLUTE_HOURS:-8}
+      SESSION_TOUCH_SECONDS: ${SESSION_TOUCH_SECONDS:-60}
+      LOGIN_ATTEMPTS: ${LOGIN_ATTEMPTS:-5}
+      LOGIN_WINDOW_MINUTES: ${LOGIN_WINDOW_MINUTES:-15}
+      UPLOAD_MAX_BYTES: ${UPLOAD_MAX_BYTES:-10485760}
+      IMPORT_MAX_ROWS: ${IMPORT_MAX_ROWS:-100000}
+      IMPORT_MAX_COLUMNS: ${IMPORT_MAX_COLUMNS:-100}
+      XLSX_MAX_UNCOMPRESSED_BYTES: ${XLSX_MAX_UNCOMPRESSED_BYTES:-125829120}
+      TRUSTED_PROXY_COUNT: "1"
+      SECURE_COOKIES: "true"
+      AUTO_CREATE_SCHEMA: "false"
+      SEED_ON_STARTUP: "false"
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      WEB_CONCURRENCY: ${WEB_CONCURRENCY:-2}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - internal
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=128m
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  caddy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?Defina APP_DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/online/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - internal
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:

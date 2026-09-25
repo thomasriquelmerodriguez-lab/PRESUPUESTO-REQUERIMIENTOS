@@ -1,0 +1,11 @@
+VERIFICACIÓN DE LA ACTUALIZACIÓN OBLIGADO CAS POR CUENTA
+
+- 18 pruebas automatizadas: OK
+- Sintaxis Python: OK
+- Sintaxis JavaScript: OK
+- Cadena completa de migraciones Alembic hasta 4a6b8c0d2e3f: OK
+- Cálculo por cuenta: presupuesto vigente - requerimientos - Obligado CAS: verificado
+- Conservación de CAS cuando una actualización presupuestaria no trae columna CAS: verificado
+- Valores CAS municipal 2026: incluidos desde data/seed/obligated_cas_municipal_2026.json
+
+La actualización conserva la base PostgreSQL existente siempre que se ejecute docker compose down SIN -v.

@@ -1,0 +1,10 @@
+VERSION PARA PUBLICACION WEB
+
+1. Requiere VPS Linux con Docker; un hosting solo FTP/HTML no basta.
+2. Lea GUIA_PUBLICACION_WEB.md.
+3. Configure un dominio/subdominio apuntando al VPS.
+4. Genere .env en el servidor con scripts/online/generar_env.py.
+5. Inicie con scripts/online/iniciar_online.sh.
+6. Para conservar sus datos actuales, exporte la base local y restáurela en el VPS siguiendo la guía.
+
+No publique ni comparta el archivo .env ni los respaldos .dump.

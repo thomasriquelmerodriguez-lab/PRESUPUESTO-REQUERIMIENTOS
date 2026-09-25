@@ -1,0 +1,19 @@
+SISTEMA PROFESIONAL DE REQUERIMIENTOS PRESUPUESTARIOS
+
+Esta entrega ya no es un archivo HTML independiente. Para soportar seguridad real, base de datos y varios usuarios al mismo tiempo, debe ejecutarse como aplicación web cliente-servidor.
+
+INICIO EN WINDOWS
+1. Instale Docker Desktop.
+2. Descomprima la carpeta completa.
+3. Ejecute INICIAR_EN_WINDOWS.bat.
+4. Abra http://localhost:8000.
+
+USUARIOS INICIALES
+- Encargado de presupuesto
+- Salud
+- Educación
+Clave inicial de migración: 2026
+
+IMPORTANTE: cambie las claves antes de utilizar la aplicación en producción.
+
+Lea README.md y la carpeta docs para instalación, seguridad, migración, riesgos y despliegue.

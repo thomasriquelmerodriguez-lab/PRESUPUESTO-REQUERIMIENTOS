@@ -1,0 +1,12 @@
+VERIFICACIÓN DE LA ACTUALIZACIÓN 2.1
+
+- 13 pruebas automatizadas aprobadas.
+- Migración Alembic para user_permissions validada en una base SQLite vacía.
+- Sintaxis Python validada con compileall.
+- Sintaxis de todos los módulos JavaScript validada con node --check.
+- Compatibilidad de inicio de sesión anterior por nombre conservada en la API.
+- Inicio de sesión por selector e identificador opaco verificado.
+- Creación de usuarios, aislamiento por área y autorización granular verificados.
+- Revocación de sesiones implementada al modificar seguridad o clave.
+
+Docker no está disponible en el entorno de generación, por lo que la construcción final debe realizarse en Docker Desktop mediante docker compose up --build -d.

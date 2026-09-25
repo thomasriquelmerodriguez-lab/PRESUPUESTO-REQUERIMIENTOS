@@ -1,0 +1,25 @@
+[project]
+name = "sistema-requerimientos-illapel"
+version = "2.1.0"
+description = "Sistema multiárea de requerimientos y presupuesto"
+requires-python = ">=3.12,<3.14"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --disable-warnings"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+exclude = ["data", "migrations"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S"]
+ignore = ["S101", "B008"]
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["pydantic.mypy"]
+ignore_missing_imports = true
+warn_unused_ignores = true
+no_implicit_optional = true

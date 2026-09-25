@@ -1,0 +1,22 @@
+ACTUALIZACIÓN DE LA APLICACIÓN SIN PERDER DATOS
+
+1. Mantenga Docker Desktop abierto y con Engine running.
+2. Abra PowerShell en la carpeta de la aplicación actual.
+3. Ejecute:
+
+   docker compose down
+
+4. Descomprima esta versión. Puede reemplazar la carpeta anterior o usar la nueva carpeta; el proyecto mantiene un nombre fijo para reutilizar la misma base de datos.
+5. Abra PowerShell en la carpeta nueva y ejecute:
+
+   docker compose up --build -d
+
+6. Espere a que termine y abra:
+
+   http://localhost:8000
+
+7. Verifique el estado con:
+
+   docker compose ps
+
+IMPORTANTE: No ejecute docker compose down -v. La opción -v elimina la base de datos.

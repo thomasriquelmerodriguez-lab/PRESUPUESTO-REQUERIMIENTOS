@@ -1,0 +1,15 @@
+VERIFICACIÓN DE ENTREGA - AÑOS PRESUPUESTARIOS CONFIGURABLES
+
+Versión: 2.3.0
+
+Validaciones realizadas:
+- 16 pruebas automatizadas aprobadas.
+- Compilación de módulos Python sin errores.
+- Validación de sintaxis de todos los módulos JavaScript con node --check.
+- Migración Alembic completa desde base vacía hasta revisión 3f5a7c9d1e2b.
+- Creación de un nuevo año presupuestario validada.
+- Rechazo de años duplicados validado.
+- Carga y aplicación de un presupuesto a un año nuevo validada.
+- Aislamiento por área y permisos se mantiene en el servidor.
+
+La actualización conserva el nombre del proyecto Docker y el volumen PostgreSQL existente.

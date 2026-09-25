@@ -1,0 +1,21 @@
+CORRECCION APLICADA
+
+La version anterior excluia accidentalmente requirements.txt mediante la regla *.txt de .dockerignore.
+Esta version mantiene requirements.txt dentro del contexto de construccion de Docker.
+
+INICIO DESDE POWERSHELL
+1. Abra PowerShell dentro de esta carpeta.
+2. Ejecute:
+   docker compose up --build -d
+3. Compruebe el estado:
+   docker compose ps
+4. Abra:
+   http://localhost:8000
+
+Para revisar errores:
+   docker compose logs --tail=150
+
+Para detener sin borrar los datos:
+   docker compose down
+
+No use docker compose down -v, porque elimina el volumen de PostgreSQL.

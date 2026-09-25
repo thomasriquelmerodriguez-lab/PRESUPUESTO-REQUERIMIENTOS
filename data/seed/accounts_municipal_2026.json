@@ -1,0 +1,1622 @@
+[
+  {
+    "code": "215-21-01-000-000-000",
+    "name": "PERSONAL DE PLANTA",
+    "budget": 2311726000,
+    "groupKey": "215-21-01",
+    "group": "PERSONAL DE PLANTA",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-21-01-001-000-000",
+    "name": "SUELDOS Y SOBRESUELDOS",
+    "budget": 1877714000,
+    "groupKey": "215-21-01",
+    "group": "PERSONAL DE PLANTA",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-21-01-002-000-000",
+    "name": "APORTES DEL EMPLEADOR",
+    "budget": 50164000,
+    "groupKey": "215-21-01",
+    "group": "PERSONAL DE PLANTA",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-21-01-003-000-000",
+    "name": "ASIGNACIONES POR DESEMPEÑO",
+    "budget": 230573000,
+    "groupKey": "215-21-01",
+    "group": "PERSONAL DE PLANTA",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-21-01-004-000-000",
+    "name": "REMUNERACIONES VARIABLES",
+    "budget": 128775000,
+    "groupKey": "215-21-01",
+    "group": "PERSONAL DE PLANTA",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-21-01-005-000-000",
+    "name": "AGUINALDOS Y BONOS",
+    "budget": 24500000,
+    "groupKey": "215-21-01",
+    "group": "PERSONAL DE PLANTA",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-21-02-000-000-000",
+    "name": "PERSONAL A CONTRATA",
+    "budget": 828815000,
+    "groupKey": "215-21-02",
+    "group": "PERSONAL A CONTRATA",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-21-02-001-000-000",
+    "name": "SUELDOS Y SOBRESUELDOS",
+    "budget": 593446000,
+    "groupKey": "215-21-02",
+    "group": "PERSONAL A CONTRATA",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-21-02-002-000-000",
+    "name": "APORTES DEL EMPLEADOR",
+    "budget": 52726000,
+    "groupKey": "215-21-02",
+    "group": "PERSONAL A CONTRATA",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-21-02-003-000-000",
+    "name": "ASIGNACIONES POR DESEMPEÑO",
+    "budget": 85499000,
+    "groupKey": "215-21-02",
+    "group": "PERSONAL A CONTRATA",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-21-02-004-000-000",
+    "name": "REMUNERACIONES VARIABLES",
+    "budget": 63209000,
+    "groupKey": "215-21-02",
+    "group": "PERSONAL A CONTRATA",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-21-02-005-000-000",
+    "name": "AGUINALDOS Y BONOS",
+    "budget": 33935000,
+    "groupKey": "215-21-02",
+    "group": "PERSONAL A CONTRATA",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-21-03-000-000-000",
+    "name": "OTRAS REMUNERACIONES",
+    "budget": 328607000,
+    "groupKey": "215-21-03",
+    "group": "OTRAS REMUNERACIONES",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-21-03-001-000-000",
+    "name": "HONORARIOS A SUMA ALZADA – PERSONAS NATURALES",
+    "budget": 172173000,
+    "groupKey": "215-21-03",
+    "group": "OTRAS REMUNERACIONES",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-21-03-004-000-000",
+    "name": "REMUNERACIONES REGULADAS POR EL CÓDIGO DEL TRABAJO",
+    "budget": 54914000,
+    "groupKey": "215-21-03",
+    "group": "OTRAS REMUNERACIONES",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-21-03-005-000-000",
+    "name": "SUPLENCIAS Y REEMPLAZOS",
+    "budget": 96500000,
+    "groupKey": "215-21-03",
+    "group": "OTRAS REMUNERACIONES",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-21-03-006-000-000",
+    "name": "PERSONAL A TRATO Y/O TEMPORAL",
+    "budget": 2520000,
+    "groupKey": "215-21-03",
+    "group": "OTRAS REMUNERACIONES",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-21-03-007-000-000",
+    "name": "ALUMNOS EN PRÁCTICA",
+    "budget": 2500000,
+    "groupKey": "215-21-03",
+    "group": "OTRAS REMUNERACIONES",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-21-04-000-000-000",
+    "name": "OTRAS GASTOS EN PERSONAL",
+    "budget": 2706302000,
+    "groupKey": "215-21-04",
+    "group": "OTRAS GASTOS EN PERSONAL",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-21-04-003-000-000",
+    "name": "DIETAS A JUNTAS, CONSEJOS Y COMISIONES",
+    "budget": 105658000,
+    "groupKey": "215-21-04",
+    "group": "OTRAS GASTOS EN PERSONAL",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-21-04-004-000-000",
+    "name": "PRESTACIONES DE SERVICIOS EN PROGRAMAS COMUNITARIO",
+    "budget": 2600644000,
+    "groupKey": "215-21-04",
+    "group": "OTRAS GASTOS EN PERSONAL",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-01-000-000-000",
+    "name": "ALIMENTOS Y BEBIDAS",
+    "budget": 54000000,
+    "groupKey": "215-22-01",
+    "group": "ALIMENTOS Y BEBIDAS",
+    "preObligado": 19460054,
+    "obligadoCAS": 1691756
+  },
+  {
+    "code": "215-22-01-001-000-000",
+    "name": "PARA PERSONAS",
+    "budget": 50000000,
+    "groupKey": "215-22-01",
+    "group": "ALIMENTOS Y BEBIDAS",
+    "preObligado": 15561054,
+    "obligadoCAS": 1691755
+  },
+  {
+    "code": "215-22-01-002-000-000",
+    "name": "PARA ANIMALES",
+    "budget": 4000000,
+    "groupKey": "215-22-01",
+    "group": "ALIMENTOS Y BEBIDAS",
+    "preObligado": 3899000,
+    "obligadoCAS": 1
+  },
+  {
+    "code": "215-22-02-000-000-000",
+    "name": "TEXTILES, VESTUARIO Y CALZADO",
+    "budget": 57100000,
+    "groupKey": "215-22-02",
+    "group": "TEXTILES, VESTUARIO Y CALZADO",
+    "preObligado": 25583263,
+    "obligadoCAS": 8817235
+  },
+  {
+    "code": "215-22-02-001-000-000",
+    "name": "TEXTILES Y ACABADOS TEXTILES",
+    "budget": 100000,
+    "groupKey": "215-22-02",
+    "group": "TEXTILES, VESTUARIO Y CALZADO",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-02-002-000-000",
+    "name": "VESTUARIO, ACCESORIOS Y PRENDAS DIVERSAS",
+    "budget": 43000000,
+    "groupKey": "215-22-02",
+    "group": "TEXTILES, VESTUARIO Y CALZADO",
+    "preObligado": 20236438,
+    "obligadoCAS": 8817235
+  },
+  {
+    "code": "215-22-02-003-000-000",
+    "name": "CALZADO",
+    "budget": 14000000,
+    "groupKey": "215-22-02",
+    "group": "TEXTILES, VESTUARIO Y CALZADO",
+    "preObligado": 5346825,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-03-000-000-000",
+    "name": "COMBUSTIBLES Y LUBRICANTES",
+    "budget": 182400000,
+    "groupKey": "215-22-03",
+    "group": "COMBUSTIBLES Y LUBRICANTES",
+    "preObligado": 152580373,
+    "obligadoCAS": 1070000
+  },
+  {
+    "code": "215-22-03-001-000-000",
+    "name": "PARA VEHÍCULOS",
+    "budget": 180000000,
+    "groupKey": "215-22-03",
+    "group": "COMBUSTIBLES Y LUBRICANTES",
+    "preObligado": 151909130,
+    "obligadoCAS": 1070000
+  },
+  {
+    "code": "215-22-03-002-000-000",
+    "name": "PARA MAQUINARIAS, EQUIPOS DE PRODUCCIÓN, TRACCIÓN",
+    "budget": 300000,
+    "groupKey": "215-22-03",
+    "group": "COMBUSTIBLES Y LUBRICANTES",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-03-003-000-000",
+    "name": "PARA CALEFACCIÓN",
+    "budget": 2000000,
+    "groupKey": "215-22-03",
+    "group": "COMBUSTIBLES Y LUBRICANTES",
+    "preObligado": 671243,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-03-999-000-000",
+    "name": "PARA OTROS",
+    "budget": 100000,
+    "groupKey": "215-22-03",
+    "group": "COMBUSTIBLES Y LUBRICANTES",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-04-000-000-000",
+    "name": "MATERIALES DE USO O CONSUMO",
+    "budget": 304465000,
+    "groupKey": "215-22-04",
+    "group": "MATERIALES DE USO O CONSUMO",
+    "preObligado": 133877300,
+    "obligadoCAS": 40798866
+  },
+  {
+    "code": "215-22-04-001-000-000",
+    "name": "MATERIALES DE OFICINA",
+    "budget": 25000000,
+    "groupKey": "215-22-04",
+    "group": "MATERIALES DE USO O CONSUMO",
+    "preObligado": 22691113,
+    "obligadoCAS": 687940
+  },
+  {
+    "code": "215-22-04-003-000-000",
+    "name": "PRODUCTOS QUÍMICOS",
+    "budget": 100000,
+    "groupKey": "215-22-04",
+    "group": "MATERIALES DE USO O CONSUMO",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-04-004-000-000",
+    "name": "PRODUCTOS FARMACÉUTICOS",
+    "budget": 26500000,
+    "groupKey": "215-22-04",
+    "group": "MATERIALES DE USO O CONSUMO",
+    "preObligado": 8185656,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-04-005-000-000",
+    "name": "MATERIALES Y ÚTILES QUIRÚRGICOS",
+    "budget": 10000000,
+    "groupKey": "215-22-04",
+    "group": "MATERIALES DE USO O CONSUMO",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-04-005-001-000",
+    "name": "MATERIALES Y UTILES QUIRURGICOS (EJECUCION)",
+    "budget": 10000000,
+    "groupKey": "215-22-04",
+    "group": "MATERIALES DE USO O CONSUMO",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-04-007-000-000",
+    "name": "MATERIALES Y ÚTILES DE ASEO",
+    "budget": 35000000,
+    "groupKey": "215-22-04",
+    "group": "MATERIALES DE USO O CONSUMO",
+    "preObligado": 33004883,
+    "obligadoCAS": 106402
+  },
+  {
+    "code": "215-22-04-008-000-000",
+    "name": "MENAJE PARA OFICINA, CASINO Y OTROS",
+    "budget": 500000,
+    "groupKey": "215-22-04",
+    "group": "MATERIALES DE USO O CONSUMO",
+    "preObligado": 486460,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-04-009-000-000",
+    "name": "INSUMOS, REPUESTOS Y ACCESORIOS COMPUTACIONALES",
+    "budget": 5000000,
+    "groupKey": "215-22-04",
+    "group": "MATERIALES DE USO O CONSUMO",
+    "preObligado": 1148460,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-04-010-000-000",
+    "name": "MATERIALES PARA MANTENIMIENTO Y REPARACIONES DE IN",
+    "budget": 55000000,
+    "groupKey": "215-22-04",
+    "group": "MATERIALES DE USO O CONSUMO",
+    "preObligado": 51306441,
+    "obligadoCAS": 63650
+  },
+  {
+    "code": "215-22-04-011-000-000",
+    "name": "REPUESTOS Y ACCESORIOS PARA MANTENIMIENTO Y REPARA",
+    "budget": 20000000,
+    "groupKey": "215-22-04",
+    "group": "MATERIALES DE USO O CONSUMO",
+    "preObligado": 5572931,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-04-012-000-000",
+    "name": "OTROS MATERIALES, REPUESTOS Y ÚTILES DIVERSOS",
+    "budget": 1000000,
+    "groupKey": "215-22-04",
+    "group": "MATERIALES DE USO O CONSUMO",
+    "preObligado": 864731,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-04-013-000-000",
+    "name": "EQUIPOS MENORES",
+    "budget": 7000000,
+    "groupKey": "215-22-04",
+    "group": "MATERIALES DE USO O CONSUMO",
+    "preObligado": 150300,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-04-014-000-000",
+    "name": "PRODUCTOS ELABORADOS DE CUERO, CAUCHO Y PLASTICO",
+    "budget": 500000,
+    "groupKey": "215-22-04",
+    "group": "MATERIALES DE USO O CONSUMO",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-04-999-000-000",
+    "name": "OTROS",
+    "budget": 118865000,
+    "groupKey": "215-22-04",
+    "group": "MATERIALES DE USO O CONSUMO",
+    "preObligado": 10466325,
+    "obligadoCAS": 39940874
+  },
+  {
+    "code": "215-22-04-999-001-000",
+    "name": "OTROS (EJECUCION)",
+    "budget": 115865000,
+    "groupKey": "215-22-04",
+    "group": "MATERIALES DE USO O CONSUMO",
+    "preObligado": 58998272,
+    "obligadoCAS": 38465593
+  },
+  {
+    "code": "215-22-04-999-901-000",
+    "name": "OTROS (FET)",
+    "budget": 3000000,
+    "groupKey": "215-22-04",
+    "group": "MATERIALES DE USO O CONSUMO",
+    "preObligado": 1602200,
+    "obligadoCAS": 1475281
+  },
+  {
+    "code": "215-22-05-000-000-000",
+    "name": "SERVICIOS BÁSICOS",
+    "budget": 951500000,
+    "groupKey": "215-22-05",
+    "group": "SERVICIOS BÁSICOS",
+    "preObligado": 37130090,
+    "obligadoCAS": 12176088
+  },
+  {
+    "code": "215-22-05-001-000-000",
+    "name": "ELECTRICIDAD",
+    "budget": 700000000,
+    "groupKey": "215-22-05",
+    "group": "SERVICIOS BÁSICOS",
+    "preObligado": 0,
+    "obligadoCAS": 42100
+  },
+  {
+    "code": "215-22-05-002-000-000",
+    "name": "AGUA",
+    "budget": 170000000,
+    "groupKey": "215-22-05",
+    "group": "SERVICIOS BÁSICOS",
+    "preObligado": 0,
+    "obligadoCAS": 3666928
+  },
+  {
+    "code": "215-22-05-004-000-000",
+    "name": "CORREO",
+    "budget": 4000000,
+    "groupKey": "215-22-05",
+    "group": "SERVICIOS BÁSICOS",
+    "preObligado": 0,
+    "obligadoCAS": 155283
+  },
+  {
+    "code": "215-22-05-005-000-000",
+    "name": "TELEFONÍA FIJA",
+    "budget": 8500000,
+    "groupKey": "215-22-05",
+    "group": "SERVICIOS BÁSICOS",
+    "preObligado": 0,
+    "obligadoCAS": 591209
+  },
+  {
+    "code": "215-22-05-006-000-000",
+    "name": "TELEFONÍA CELULAR",
+    "budget": 21000000,
+    "groupKey": "215-22-05",
+    "group": "SERVICIOS BÁSICOS",
+    "preObligado": 666400,
+    "obligadoCAS": 2861070
+  },
+  {
+    "code": "215-22-05-007-000-000",
+    "name": "ACCESO A INTERNET",
+    "budget": 48000000,
+    "groupKey": "215-22-05",
+    "group": "SERVICIOS BÁSICOS",
+    "preObligado": 36463690,
+    "obligadoCAS": 4859498
+  },
+  {
+    "code": "215-22-06-000-000-000",
+    "name": "MANTENIMIENTO Y REPARACIONES",
+    "budget": 203000000,
+    "groupKey": "215-22-06",
+    "group": "MANTENIMIENTO Y REPARACIONES",
+    "preObligado": 119678333,
+    "obligadoCAS": 42918176
+  },
+  {
+    "code": "215-22-06-001-000-000",
+    "name": "MANTENIMIENTO Y REPARACIÓN DE EDIFICACIONES",
+    "budget": 86000000,
+    "groupKey": "215-22-06",
+    "group": "MANTENIMIENTO Y REPARACIONES",
+    "preObligado": 68960556,
+    "obligadoCAS": 37324501
+  },
+  {
+    "code": "215-22-06-001-001-000",
+    "name": "MANTENIMIENTO Y REPARACIÓN DE EDIFICACIONES (EJECU",
+    "budget": 86000000,
+    "groupKey": "215-22-06",
+    "group": "MANTENIMIENTO Y REPARACIONES",
+    "preObligado": 68960556,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-06-002-000-000",
+    "name": "MANTENIMIENTO Y REPARACIÓN DE VEHÍCULOS",
+    "budget": 76000000,
+    "groupKey": "215-22-06",
+    "group": "MANTENIMIENTO Y REPARACIONES",
+    "preObligado": 44484529,
+    "obligadoCAS": 5593675
+  },
+  {
+    "code": "215-22-06-004-000-000",
+    "name": "MANTENIMIENTO Y REPARACIÓN DE MÁQUINAS Y EQUIPOS D",
+    "budget": 5000000,
+    "groupKey": "215-22-06",
+    "group": "MANTENIMIENTO Y REPARACIONES",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-06-005-000-000",
+    "name": "MANTENIMIENTO Y REPARACIÓN DE MAQUINARIA Y EQUIPOS",
+    "budget": 25000000,
+    "groupKey": "215-22-06",
+    "group": "MANTENIMIENTO Y REPARACIONES",
+    "preObligado": 6233248,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-06-006-000-000",
+    "name": "MANTENIMIENTO Y REPARACIÓN DE OTRAS MAQUINARIAS Y",
+    "budget": 5000000,
+    "groupKey": "215-22-06",
+    "group": "MANTENIMIENTO Y REPARACIONES",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-06-007-000-000",
+    "name": "MANTENIMIENTO Y REPARACIÓN DE EQUIPOS INFORMÁTICOS",
+    "budget": 5000000,
+    "groupKey": "215-22-06",
+    "group": "MANTENIMIENTO Y REPARACIONES",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-06-999-000-000",
+    "name": "OTROS",
+    "budget": 1000000,
+    "groupKey": "215-22-06",
+    "group": "MANTENIMIENTO Y REPARACIONES",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-07-000-000-000",
+    "name": "PUBLICIDAD Y DIFUSIÓN",
+    "budget": 95000000,
+    "groupKey": "215-22-07",
+    "group": "PUBLICIDAD Y DIFUSIÓN",
+    "preObligado": 51672826,
+    "obligadoCAS": 21284687
+  },
+  {
+    "code": "215-22-07-001-000-000",
+    "name": "SERVICIOS DE PUBLICIDAD",
+    "budget": 62000000,
+    "groupKey": "215-22-07",
+    "group": "PUBLICIDAD Y DIFUSIÓN",
+    "preObligado": 34443267,
+    "obligadoCAS": 17823669
+  },
+  {
+    "code": "215-22-07-002-000-000",
+    "name": "SERVICIOS DE IMPRESIÓN",
+    "budget": 30000000,
+    "groupKey": "215-22-07",
+    "group": "PUBLICIDAD Y DIFUSIÓN",
+    "preObligado": 17229559,
+    "obligadoCAS": 3461018
+  },
+  {
+    "code": "215-22-07-999-000-000",
+    "name": "OTROS",
+    "budget": 3000000,
+    "groupKey": "215-22-07",
+    "group": "PUBLICIDAD Y DIFUSIÓN",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-08-000-000-000",
+    "name": "SERVICIOS GENERALES",
+    "budget": 710000000,
+    "groupKey": "215-22-08",
+    "group": "SERVICIOS GENERALES",
+    "preObligado": 626845793,
+    "obligadoCAS": 6480452
+  },
+  {
+    "code": "215-22-08-002-000-000",
+    "name": "SERVICIOS DE VIGILANCIA",
+    "budget": 30000000,
+    "groupKey": "215-22-08",
+    "group": "SERVICIOS GENERALES",
+    "preObligado": 10790920,
+    "obligadoCAS": 6092800
+  },
+  {
+    "code": "215-22-08-005-000-000",
+    "name": "SERVICIOS DE MANTENCIÓN DE SEMÁFOROS",
+    "budget": 2000000,
+    "groupKey": "215-22-08",
+    "group": "SERVICIOS GENERALES",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-08-006-000-000",
+    "name": "SERVICIOS DE MANTENCIÓN DE SEÑALIZACIONES DE TRÁNS",
+    "budget": 25000000,
+    "groupKey": "215-22-08",
+    "group": "SERVICIOS GENERALES",
+    "preObligado": 21164000,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-08-006-001-000",
+    "name": "EJECUCION SERVICIOS DE MANTENCIÓN DE SEÑALIZACIONE",
+    "budget": 25000000,
+    "groupKey": "215-22-08",
+    "group": "SERVICIOS GENERALES",
+    "preObligado": 21164000,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-08-007-000-000",
+    "name": "PASAJES, FLETES Y BODEGAJES",
+    "budget": 10000000,
+    "groupKey": "215-22-08",
+    "group": "SERVICIOS GENERALES",
+    "preObligado": 1399999,
+    "obligadoCAS": 387652
+  },
+  {
+    "code": "215-22-08-011-000-000",
+    "name": "SERVICIOS DE PRODUCCION Y DESARROLLO DE EVENTOS",
+    "budget": 150000000,
+    "groupKey": "215-22-08",
+    "group": "SERVICIOS GENERALES",
+    "preObligado": 147684650,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-08-999-000-000",
+    "name": "OTROS",
+    "budget": 493000000,
+    "groupKey": "215-22-08",
+    "group": "SERVICIOS GENERALES",
+    "preObligado": 445806224,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-09-000-000-000",
+    "name": "ARRIENDOS",
+    "budget": 325000000,
+    "groupKey": "215-22-09",
+    "group": "ARRIENDOS",
+    "preObligado": 54435036,
+    "obligadoCAS": 20058871
+  },
+  {
+    "code": "215-22-09-001-000-000",
+    "name": "ARRIENDO DE TERRENOS",
+    "budget": 70000000,
+    "groupKey": "215-22-09",
+    "group": "ARRIENDOS",
+    "preObligado": 0,
+    "obligadoCAS": 7230252
+  },
+  {
+    "code": "215-22-09-002-000-000",
+    "name": "ARRIENDO DE EDIFICIOS",
+    "budget": 90000000,
+    "groupKey": "215-22-09",
+    "group": "ARRIENDOS",
+    "preObligado": 0,
+    "obligadoCAS": 7857946
+  },
+  {
+    "code": "215-22-09-003-000-000",
+    "name": "ARRIENDO DE VEHÍCULOS",
+    "budget": 65000000,
+    "groupKey": "215-22-09",
+    "group": "ARRIENDOS",
+    "preObligado": 31019430,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-09-999-000-000",
+    "name": "OTROS",
+    "budget": 100000000,
+    "groupKey": "215-22-09",
+    "group": "ARRIENDOS",
+    "preObligado": 23415606,
+    "obligadoCAS": 4970673
+  },
+  {
+    "code": "215-22-10-000-000-000",
+    "name": "SERVICIOS FINANCIEROS Y DE SEGUROS",
+    "budget": 60000000,
+    "groupKey": "215-22-10",
+    "group": "SERVICIOS FINANCIEROS Y DE SEGUROS",
+    "preObligado": 0,
+    "obligadoCAS": 3168638
+  },
+  {
+    "code": "215-22-10-002-000-000",
+    "name": "PRIMAS Y GASTOS DE SEGUROS",
+    "budget": 30000000,
+    "groupKey": "215-22-10",
+    "group": "SERVICIOS FINANCIEROS Y DE SEGUROS",
+    "preObligado": 0,
+    "obligadoCAS": 3168638
+  },
+  {
+    "code": "215-22-10-003-000-000",
+    "name": "SERVICIOS DE GIROS Y REMESAS",
+    "budget": 30000000,
+    "groupKey": "215-22-10",
+    "group": "SERVICIOS FINANCIEROS Y DE SEGUROS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-11-000-000-000",
+    "name": "SERVICIOS TÉCNICOS Y PROFESIONALES",
+    "budget": 76000000,
+    "groupKey": "215-22-11",
+    "group": "SERVICIOS TÉCNICOS Y PROFESIONALES",
+    "preObligado": 63777697,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-11-002-000-000",
+    "name": "CURSOS DE CAPACITACIÓN",
+    "budget": 10000000,
+    "groupKey": "215-22-11",
+    "group": "SERVICIOS TÉCNICOS Y PROFESIONALES",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-11-999-000-000",
+    "name": "OTROS",
+    "budget": 66000000,
+    "groupKey": "215-22-11",
+    "group": "SERVICIOS TÉCNICOS Y PROFESIONALES",
+    "preObligado": 63777697,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-12-000-000-000",
+    "name": "OTROS GASTOS EN BIENES Y SERVICIOS DE CONSUMO",
+    "budget": 51000000,
+    "groupKey": "215-22-12",
+    "group": "OTROS GASTOS EN BIENES Y SERVICIOS DE CONSUMO",
+    "preObligado": 22465331,
+    "obligadoCAS": 8511000
+  },
+  {
+    "code": "215-22-12-002-000-000",
+    "name": "GASTOS MENORES",
+    "budget": 7000000,
+    "groupKey": "215-22-12",
+    "group": "OTROS GASTOS EN BIENES Y SERVICIOS DE CONSUMO",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-22-12-003-000-000",
+    "name": "GASTOS DE REPRESENTACIÓN, PROTOCOLO Y CEREMONIAL",
+    "budget": 35000000,
+    "groupKey": "215-22-12",
+    "group": "OTROS GASTOS EN BIENES Y SERVICIOS DE CONSUMO",
+    "preObligado": 22465331,
+    "obligadoCAS": 8426000
+  },
+  {
+    "code": "215-22-12-005-000-000",
+    "name": "DERECHOS Y TASAS",
+    "budget": 9000000,
+    "groupKey": "215-22-12",
+    "group": "OTROS GASTOS EN BIENES Y SERVICIOS DE CONSUMO",
+    "preObligado": 0,
+    "obligadoCAS": 85000
+  },
+  {
+    "code": "215-23-01-000-000-000",
+    "name": "PRESTACIONES PREVISIONALES",
+    "budget": 33845000,
+    "groupKey": "215-23-01",
+    "group": "PRESTACIONES PREVISIONALES",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-23-01-004-000-000",
+    "name": "DESAHUCIOS E INDEMNIZACIONES",
+    "budget": 33845000,
+    "groupKey": "215-23-01",
+    "group": "PRESTACIONES PREVISIONALES",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-23-03-000-000-000",
+    "name": "PRESTACIONES SOCIALES DEL EMPLEADOR",
+    "budget": 40394000,
+    "groupKey": "215-23-03",
+    "group": "PRESTACIONES SOCIALES DEL EMPLEADOR",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-23-03-001-000-000",
+    "name": "INDEMNIZACION DE CARGO FISCAL",
+    "budget": 40394000,
+    "groupKey": "215-23-03",
+    "group": "PRESTACIONES SOCIALES DEL EMPLEADOR",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-24-00-000-000-000",
+    "name": "C X P TRANSFERENCIAS CORRIENTES",
+    "budget": 1881000000,
+    "groupKey": "215-24-00",
+    "group": "C X P TRANSFERENCIAS CORRIENTES",
+    "preObligado": 197247898,
+    "obligadoCAS": 41848695
+  },
+  {
+    "code": "215-24-01-000-000-000",
+    "name": "AL SECTOR PRIVADO",
+    "budget": 508000000,
+    "groupKey": "215-24-01",
+    "group": "AL SECTOR PRIVADO",
+    "preObligado": 197247898,
+    "obligadoCAS": 33357491
+  },
+  {
+    "code": "215-24-01-001-000-000",
+    "name": "FONDOS DE EMERGENCIA",
+    "budget": 210000000,
+    "groupKey": "215-24-01",
+    "group": "AL SECTOR PRIVADO",
+    "preObligado": 196100368,
+    "obligadoCAS": 13246508
+  },
+  {
+    "code": "215-24-01-001-001-000",
+    "name": "FONDOS DE EMERGENCIA (EJECUCION)",
+    "budget": 90000000,
+    "groupKey": "215-24-01",
+    "group": "AL SECTOR PRIVADO",
+    "preObligado": 86071834,
+    "obligadoCAS": 3715590
+  },
+  {
+    "code": "215-24-01-001-901-000",
+    "name": "FONDOS DE EMERGENCIA (FET)",
+    "budget": 120000000,
+    "groupKey": "215-24-01",
+    "group": "AL SECTOR PRIVADO",
+    "preObligado": 110028534,
+    "obligadoCAS": 9530918
+  },
+  {
+    "code": "215-24-01-004-000-000",
+    "name": "ORGANIZACIONES COMUNITARIAS",
+    "budget": 160000000,
+    "groupKey": "215-24-01",
+    "group": "AL SECTOR PRIVADO",
+    "preObligado": 0,
+    "obligadoCAS": 14400000
+  },
+  {
+    "code": "215-24-01-005-000-000",
+    "name": "OTRAS PERSONAS JURÍDICAS PRIVADAS",
+    "budget": 30000000,
+    "groupKey": "215-24-01",
+    "group": "AL SECTOR PRIVADO",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-24-01-006-000-000",
+    "name": "VOLUNTARIADO",
+    "budget": 10000000,
+    "groupKey": "215-24-01",
+    "group": "AL SECTOR PRIVADO",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-24-01-007-000-000",
+    "name": "ASISTENCIA SOCIAL A PERSONAS NATURALES",
+    "budget": 200000000,
+    "groupKey": "215-24-01",
+    "group": "AL SECTOR PRIVADO",
+    "preObligado": 0,
+    "obligadoCAS": 5633633
+  },
+  {
+    "code": "215-24-01-007-001-000",
+    "name": "ASISTENCIA SOCIAL A PERSONAS NATURALES (EJECUCION)",
+    "budget": 120000000,
+    "groupKey": "215-24-01",
+    "group": "AL SECTOR PRIVADO",
+    "preObligado": 0,
+    "obligadoCAS": 5633633
+  },
+  {
+    "code": "215-24-01-007-901-000",
+    "name": "ASISTENCIA SOCIAL A PERSONAS NATURALES (FET)",
+    "budget": 80000000,
+    "groupKey": "215-24-01",
+    "group": "AL SECTOR PRIVADO",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-24-01-008-000-000",
+    "name": "PREMIOS Y OTROS",
+    "budget": 8000000,
+    "groupKey": "215-24-01",
+    "group": "AL SECTOR PRIVADO",
+    "preObligado": 1147530,
+    "obligadoCAS": 4300998
+  },
+  {
+    "code": "215-24-03-000-000-000",
+    "name": "A OTRAS ENTIDADES PÚBLICAS",
+    "budget": 1373000000,
+    "groupKey": "215-24-03",
+    "group": "A OTRAS ENTIDADES PÚBLICAS",
+    "preObligado": 0,
+    "obligadoCAS": 8491204
+  },
+  {
+    "code": "215-24-03-002-000-000",
+    "name": "A LOS SERVICIOS DE SALUD",
+    "budget": 3000000,
+    "groupKey": "215-24-03",
+    "group": "A OTRAS ENTIDADES PÚBLICAS",
+    "preObligado": 0,
+    "obligadoCAS": 223750
+  },
+  {
+    "code": "215-24-03-002-001-000",
+    "name": "MULTA LEY DE ALCOHOLES",
+    "budget": 3000000,
+    "groupKey": "215-24-03",
+    "group": "A OTRAS ENTIDADES PÚBLICAS",
+    "preObligado": 0,
+    "obligadoCAS": 223750
+  },
+  {
+    "code": "215-24-03-080-000-000",
+    "name": "A LAS ASOCIACIONES",
+    "budget": 42000000,
+    "groupKey": "215-24-03",
+    "group": "A OTRAS ENTIDADES PÚBLICAS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-24-03-080-001-000",
+    "name": "A LA ASOCIACIÓN CHILENA DE MUNICIPALIDADES",
+    "budget": 22000000,
+    "groupKey": "215-24-03",
+    "group": "A OTRAS ENTIDADES PÚBLICAS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-24-03-080-002-000",
+    "name": "A OTRAS ASOCIACIONES",
+    "budget": 20000000,
+    "groupKey": "215-24-03",
+    "group": "A OTRAS ENTIDADES PÚBLICAS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-24-03-090-000-000",
+    "name": "AL FONDO COMÚN MUNICIPAL – PERMISOS DE CIRCULACIÓN",
+    "budget": 900000000,
+    "groupKey": "215-24-03",
+    "group": "A OTRAS ENTIDADES PÚBLICAS",
+    "preObligado": 0,
+    "obligadoCAS": 8267454
+  },
+  {
+    "code": "215-24-03-090-001-000",
+    "name": "APORTE AÑO VIGENTE",
+    "budget": 900000000,
+    "groupKey": "215-24-03",
+    "group": "A OTRAS ENTIDADES PÚBLICAS",
+    "preObligado": 0,
+    "obligadoCAS": 8267454
+  },
+  {
+    "code": "215-24-03-099-000-000",
+    "name": "A OTRAS ENTIDADES PÚBLICAS",
+    "budget": 113000000,
+    "groupKey": "215-24-03",
+    "group": "A OTRAS ENTIDADES PÚBLICAS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-24-03-100-000-000",
+    "name": "A OTRAS MUNICIPALIDADES",
+    "budget": 7000000,
+    "groupKey": "215-24-03",
+    "group": "A OTRAS ENTIDADES PÚBLICAS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-24-03-101-000-000",
+    "name": "A SERVICIOS INCORPORADOS A SU GESTIÓN",
+    "budget": 308000000,
+    "groupKey": "215-24-03",
+    "group": "A OTRAS ENTIDADES PÚBLICAS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-24-03-101-001-000",
+    "name": "A EDUCACIÓN",
+    "budget": 250000000,
+    "groupKey": "215-24-03",
+    "group": "A OTRAS ENTIDADES PÚBLICAS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-24-03-101-001-001",
+    "name": "A EDUCACION (EJECUCION)",
+    "budget": 48141000,
+    "groupKey": "215-24-03",
+    "group": "A OTRAS ENTIDADES PÚBLICAS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-24-03-101-001-901",
+    "name": "A EDUCACIÓN (FET)",
+    "budget": 165185000,
+    "groupKey": "215-24-03",
+    "group": "A OTRAS ENTIDADES PÚBLICAS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-24-03-101-001-902",
+    "name": "A EDUCACIÓN (FONDO MINERO)",
+    "budget": 36674000,
+    "groupKey": "215-24-03",
+    "group": "A OTRAS ENTIDADES PÚBLICAS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-24-03-101-002-000",
+    "name": "A SALUD",
+    "budget": 58000000,
+    "groupKey": "215-24-03",
+    "group": "A OTRAS ENTIDADES PÚBLICAS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-25-99-000-000-000",
+    "name": "OTROS INGRESOS AL FISCO",
+    "budget": 50000000,
+    "groupKey": "215-25-99",
+    "group": "OTROS INGRESOS AL FISCO",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-25-99-002-000-000",
+    "name": "INTEGROS POR SALDOS NO UTILIZADOS DE TRANSFERENCIA",
+    "budget": 50000000,
+    "groupKey": "215-25-99",
+    "group": "OTROS INGRESOS AL FISCO",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-26-01-000-000-000",
+    "name": "DEVOLUCIONES",
+    "budget": 6000000,
+    "groupKey": "215-26-01",
+    "group": "DEVOLUCIONES",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-26-02-000-000-000",
+    "name": "COMPENSACIONES POR DAÑOS A TERCEROS Y/O A LA PROPI",
+    "budget": 50740000,
+    "groupKey": "215-26-02",
+    "group": "COMPENSACIONES POR DAÑOS A TERCEROS Y/O A LA PROPI",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-26-04-000-000-000",
+    "name": "APLICACIÓN FONDOS DE TERCEROS",
+    "budget": 7000000,
+    "groupKey": "215-26-04",
+    "group": "APLICACIÓN FONDOS DE TERCEROS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-26-04-001-000-000",
+    "name": "ARANCEL AL REGISTRO DE MULTAS DE TRÁNSITO NO PAGAD",
+    "budget": 7000000,
+    "groupKey": "215-26-04",
+    "group": "APLICACIÓN FONDOS DE TERCEROS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-29-01-000-000-000",
+    "name": "TERRENOS",
+    "budget": 200000000,
+    "groupKey": "215-29-01",
+    "group": "TERRENOS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-29-01-901-000-000",
+    "name": "TERRENOS (FET)",
+    "budget": 200000000,
+    "groupKey": "215-29-01",
+    "group": "TERRENOS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-29-03-000-000-000",
+    "name": "VEHÍCULOS",
+    "budget": 426926000,
+    "groupKey": "215-29-03",
+    "group": "VEHÍCULOS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-29-03-901-000-000",
+    "name": "VEHICULOS (FET)",
+    "budget": 104843000,
+    "groupKey": "215-29-03",
+    "group": "VEHÍCULOS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-29-03-902-000-000",
+    "name": "VEHÍCULOS (FONDO MINERO)",
+    "budget": 322083000,
+    "groupKey": "215-29-03",
+    "group": "VEHÍCULOS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-29-04-000-000-000",
+    "name": "MOBILIARIO Y OTROS",
+    "budget": 46000000,
+    "groupKey": "215-29-04",
+    "group": "MOBILIARIO Y OTROS",
+    "preObligado": 27852487,
+    "obligadoCAS": 9840001
+  },
+  {
+    "code": "215-29-04-001-000-000",
+    "name": "MOBILIARIOS Y OTROS (EJECUCION)",
+    "budget": 46000000,
+    "groupKey": "215-29-04",
+    "group": "MOBILIARIO Y OTROS",
+    "preObligado": 27852487,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-29-05-000-000-000",
+    "name": "MÁQUINAS Y EQUIPOS",
+    "budget": 29500000,
+    "groupKey": "215-29-05",
+    "group": "MÁQUINAS Y EQUIPOS",
+    "preObligado": 11028549,
+    "obligadoCAS": 1880000
+  },
+  {
+    "code": "215-29-05-001-000-000",
+    "name": "MÁQUINAS Y EQUIPOS DE OFICINA",
+    "budget": 10000000,
+    "groupKey": "215-29-05",
+    "group": "MÁQUINAS Y EQUIPOS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-29-05-999-000-000",
+    "name": "OTRAS",
+    "budget": 19500000,
+    "groupKey": "215-29-05",
+    "group": "MÁQUINAS Y EQUIPOS",
+    "preObligado": 11028549,
+    "obligadoCAS": 1880000
+  },
+  {
+    "code": "215-29-06-000-000-000",
+    "name": "EQUIPOS INFORMÁTICOS",
+    "budget": 16000000,
+    "groupKey": "215-29-06",
+    "group": "EQUIPOS INFORMÁTICOS",
+    "preObligado": 8682500,
+    "obligadoCAS": 846299
+  },
+  {
+    "code": "215-29-06-001-000-000",
+    "name": "EQUIPOS COMPUTACIONALES Y PERIFÉRICOS",
+    "budget": 16000000,
+    "groupKey": "215-29-06",
+    "group": "EQUIPOS INFORMÁTICOS",
+    "preObligado": 8682500,
+    "obligadoCAS": 846299
+  },
+  {
+    "code": "215-29-07-000-000-000",
+    "name": "PROGRAMAS INFORMÁTICOS",
+    "budget": 10000000,
+    "groupKey": "215-29-07",
+    "group": "PROGRAMAS INFORMÁTICOS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-29-07-002-000-000",
+    "name": "SISTEMA DE INFORMACIÓN",
+    "budget": 10000000,
+    "groupKey": "215-29-07",
+    "group": "PROGRAMAS INFORMÁTICOS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-31-00-000-000-000",
+    "name": "C X P INICIATIVAS DE INVERSIÓN",
+    "budget": 3208026000,
+    "groupKey": "215-31-00",
+    "group": "C X P INICIATIVAS DE INVERSIÓN",
+    "preObligado": 826430707,
+    "obligadoCAS": 236174634
+  },
+  {
+    "code": "215-31-02-000-000-000",
+    "name": "PROYECTOS",
+    "budget": 3208026000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 826430707,
+    "obligadoCAS": 236174634
+  },
+  {
+    "code": "215-31-02-001-000-000",
+    "name": "GASTOS ADMINISTRATIVOS",
+    "budget": 1749000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-31-02-001-001-000",
+    "name": "GASTOS ADMINISTRATIVOS EDIFICIO CONSISTORIAL",
+    "budget": 1749000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-31-02-002-000-000",
+    "name": "CONSULTORÍAS",
+    "budget": 200000000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-31-02-002-265-000",
+    "name": "DISEÑO ESCUELA VILLA LOS NARANJOS, COMUNA DE ILLAP",
+    "budget": 150000000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-31-02-002-269-000",
+    "name": "DISEÑO DE CUARTEL DE BOMBEROS VILLA SAN RAFAEL",
+    "budget": 50000000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-31-02-004-000-000",
+    "name": "OBRAS CIVILES",
+    "budget": 3006277000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 826430707,
+    "obligadoCAS": 236174634
+  },
+  {
+    "code": "215-31-02-004-312-000",
+    "name": "MEJORAMIENTO MULTICANCHA CUZCUZ, COMUNA DE ILLAPEL",
+    "budget": 26767000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 0,
+    "obligadoCAS": 26766494
+  },
+  {
+    "code": "215-31-02-004-314-000",
+    "name": "MEJORAMIENTO PLAZOLETA MALLACURA, COMUNA DE ILLAPE",
+    "budget": 46851000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 0,
+    "obligadoCAS": 46850442
+  },
+  {
+    "code": "215-31-02-004-316-000",
+    "name": "MEJORAMIENTO ESPACIO PUBLICO ACCESO A CEMENTERIO M",
+    "budget": 61174000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-31-02-004-318-000",
+    "name": "CONSTRUCCION SISTEMA DE IMPULSION APR LOS PERALES",
+    "budget": 61475000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 0,
+    "obligadoCAS": 61324276
+  },
+  {
+    "code": "215-31-02-004-319-000",
+    "name": "CONSTRUCCIÓN ESPACIO PUBLICO HERMINIA RAMOS",
+    "budget": 89607000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 37574283,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-31-02-004-327-000",
+    "name": "CONSTRUCCION CANCHA DE PATINAJE, COMUNA DE ILLAPEL",
+    "budget": 100000000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-31-02-004-329-000",
+    "name": "PARQUE URBANO CERRO PAJARITOS",
+    "budget": 80000000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-31-02-004-330-000",
+    "name": "MEJORAMIENTO PLAZA PERALILLO, LA POSADA",
+    "budget": 97373000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-31-02-004-331-000",
+    "name": "MEJORAMIENTO SISTEMA DE IMPULSIÓN DE AGUA POTABLE",
+    "budget": 55946000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-31-02-004-332-000",
+    "name": "MEJORAMIENTO CALLES CUZ CUZ-MILLAHUE-MAURO, COMUNA DE ILLAPEL",
+    "budget": 337098000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 337097667,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-31-02-004-333-000",
+    "name": "CONSTRUCCIÓN CALLE LOS ÁLAMOS, SECTOR LAS MAJADITAS, COMUNA DE ILLAPEL",
+    "budget": 326006000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 326005558,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-31-02-004-901-000",
+    "name": "FET",
+    "budget": 232381000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 10354576,
+    "obligadoCAS": 289199
+  },
+  {
+    "code": "215-31-02-004-901-250",
+    "name": "CONSTRUCCION NICHOS CEMENTERIO MUNICIPAL",
+    "budget": 19381000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 10076662,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-31-02-004-901-261",
+    "name": "MEJORAMIENTO MULTICANCHAS DIVERSOS SECTORES (FET)",
+    "budget": 210000000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-31-02-004-901-321",
+    "name": "MEJORAMIENTO PLAZOLETA EL MAURO",
+    "budget": 3000000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 277914,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-31-02-004-902-000",
+    "name": "FONDOS MINEROS",
+    "budget": 1491599000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 115398623,
+    "obligadoCAS": 89945967
+  },
+  {
+    "code": "215-31-02-004-902-294",
+    "name": "INSTALACION DE LUMINARIAS DIVERSOS SECTORES FONDO MINERO",
+    "budget": 60000000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 12935825,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-31-02-004-902-316",
+    "name": "MEJORAMIENTO ESPACIO PUBLICO ACCESO A CEMENTERIO M",
+    "budget": 25000000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-31-02-004-902-320",
+    "name": "MEJORAMIENTO CASA DE LA CULTURA, COMUNA DE ILLAPEL",
+    "budget": 200000000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 44673382,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-31-02-004-902-321",
+    "name": "MEJORAMIENTO MULTICANCHA ESCUELA LA COLONIA, COMUN",
+    "budget": 30000000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 0,
+    "obligadoCAS": 29555536
+  },
+  {
+    "code": "215-31-02-004-902-322",
+    "name": "MEJORAMIENTO CICLOVIA ACCESO SUR, COMUNA DE ILLAPE",
+    "budget": 145000000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 11348117,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-31-02-004-902-323",
+    "name": "PROYECTO ESCALERA DE MOSAICOS",
+    "budget": 18965000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 0,
+    "obligadoCAS": 2908822
+  },
+  {
+    "code": "215-31-02-004-902-324",
+    "name": "MEJORAMIENTO PLAZA ELIGE VIVIR SANO",
+    "budget": 112634000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 42530007,
+    "obligadoCAS": 55770916
+  },
+  {
+    "code": "215-31-02-004-902-326",
+    "name": "PLAN DE CONTINGENCIA POLITECNICO",
+    "budget": 200000000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 3911292,
+    "obligadoCAS": 2500
+  },
+  {
+    "code": "215-31-02-004-902-334",
+    "name": "MEJORAMIENTO PLAZOLETA CHOAPA FONDO MINERO",
+    "budget": 50000000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-31-02-004-902-335",
+    "name": "MEJORAMIENTO PARQUE AMBROSIO O\" HIGGINS FONDO MINERO",
+    "budget": 400000000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  },
+  {
+    "code": "215-31-02-004-902-336",
+    "name": "MEJORAMIENTO SALA DE ACONDICIONAMIENTO FISICO, GIMNASIO MUNICIPAL",
+    "budget": 250000000,
+    "groupKey": "215-31-02",
+    "group": "PROYECTOS",
+    "preObligado": 0,
+    "obligadoCAS": 0
+  }
+]

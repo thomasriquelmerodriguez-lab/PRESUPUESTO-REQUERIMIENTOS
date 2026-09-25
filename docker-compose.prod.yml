@@ -1,0 +1,53 @@
+name: sistema_requerimientos_profesional
+services:
+  db:
+    image: postgres:17-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: presupuesto
+      POSTGRES_USER: presupuesto
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U presupuesto -d presupuesto"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  app:
+    build: .
+    restart: always
+    environment:
+      ENVIRONMENT: production
+      APP_ORIGIN: ${APP_ORIGIN:?Defina APP_ORIGIN con https}
+      DATABASE_URL: postgresql+psycopg://presupuesto:${POSTGRES_PASSWORD}@db:5432/presupuesto
+      SECRET_KEY: ${SECRET_KEY:?Defina SECRET_KEY aleatoria de al menos 32 caracteres}
+      INITIAL_PASSWORD: ${INITIAL_PASSWORD:?Defina una clave inicial temporal}
+      SECURE_COOKIES: "true"
+      TRUSTED_PROXY_COUNT: "1"
+      AUTO_CREATE_SCHEMA: "false"
+      SEED_ON_STARTUP: "false"
+      WEB_CONCURRENCY: ${WEB_CONCURRENCY:-2}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [internal]
+  caddy:
+    image: caddy:2.10-alpine
+    restart: always
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?Defina APP_DOMAIN}
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [app]
+    networks: [internal]
+networks:
+  internal:
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:
