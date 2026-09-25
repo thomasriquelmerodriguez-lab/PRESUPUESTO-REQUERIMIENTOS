@@ -20,6 +20,7 @@ def _requirement_payload(
     *,
     area_slug: str,
     account_name: str = "",
+    account_matrix: str = "",
     lock_owner: str | None = None,
 ) -> dict:
     locked_by = None
@@ -43,7 +44,7 @@ def _requirement_payload(
         "notes": row.notes,
         "account_code": row.account_code,
         "account_name": account_name or "",
-        "matrix_code": matrix_code(row.account_code),
+        "matrix_code": account_matrix or matrix_code(row.account_code),
         "included_in_base": row.included_in_base,
         "version": row.version,
         "locked_by": locked_by,
@@ -69,8 +70,17 @@ def list_requirements(
     if year:
         filters.append(Requirement.budget_year == year)
     if matrix:
-        prefix = matrix.replace("-00-000-000-000", "")
-        filters.append(Requirement.account_code.like(prefix + "%"))
+        matrix_codes = (
+            select(BudgetAccount.code)
+            .join(BudgetVersion, BudgetVersion.id == BudgetAccount.budget_version_id)
+            .where(
+                BudgetVersion.area_id == area.id,
+                BudgetVersion.active.is_(True),
+                BudgetAccount.matrix_code == matrix,
+                *([BudgetVersion.year == year] if year else []),
+            )
+        )
+        filters.append(Requirement.account_code.in_(matrix_codes))
     if account_code:
         filters.append(Requirement.account_code == account_code)
     if search_text:
@@ -100,6 +110,19 @@ def list_requirements(
         .correlate(Requirement)
         .scalar_subquery()
     )
+    account_matrix = (
+        select(BudgetAccount.matrix_code)
+        .join(BudgetVersion, BudgetVersion.id == BudgetAccount.budget_version_id)
+        .where(
+            BudgetVersion.area_id == Requirement.area_id,
+            BudgetVersion.year == Requirement.budget_year,
+            BudgetVersion.active.is_(True),
+            BudgetAccount.code == Requirement.account_code,
+        )
+        .limit(1)
+        .correlate(Requirement)
+        .scalar_subquery()
+    )
     lock_owner = (
         select(User.display_name)
         .where(User.id == Requirement.lock_user_id)
@@ -109,7 +132,7 @@ def list_requirements(
     )
     rows = list(
         db.execute(
-            select(Requirement, account_name.label("account_name"), lock_owner.label("lock_owner"))
+            select(Requirement, account_name.label("account_name"), account_matrix.label("account_matrix"), lock_owner.label("lock_owner"))
             .where(*filters)
             .order_by(Requirement.request_date.desc(), Requirement.created_at.desc())
             .offset((page - 1) * page_size)
@@ -122,9 +145,10 @@ def list_requirements(
                 row,
                 area_slug=area_slug,
                 account_name=resolved_account_name or "",
+                account_matrix=resolved_account_matrix or "",
                 lock_owner=resolved_lock_owner,
             )
-            for row, resolved_account_name, resolved_lock_owner in rows
+            for row, resolved_account_name, resolved_account_matrix, resolved_lock_owner in rows
         ],
         "total": int(total),
         "total_amount": int(total_amount or 0),
@@ -321,8 +345,8 @@ def delete_requirement(
     raise ConflictError("No fue posible eliminar el registro.")
 
 def requirement_view(db: Session, row: Requirement) -> dict:
-    account_name = db.execute(
-        select(BudgetAccount.name)
+    account_info = db.execute(
+        select(BudgetAccount.name, BudgetAccount.matrix_code)
         .join(BudgetVersion, BudgetVersion.id == BudgetAccount.budget_version_id)
         .where(
             BudgetVersion.area_id == row.area_id,
@@ -331,7 +355,9 @@ def requirement_view(db: Session, row: Requirement) -> dict:
             BudgetAccount.code == row.account_code,
         )
         .limit(1)
-    ).scalar_one_or_none() or ""
+    ).one_or_none()
+    account_name = account_info[0] if account_info else ""
+    account_matrix = account_info[1] if account_info else ""
     lock_owner = None
     if row.lock_user_id:
         lock_owner = db.execute(
@@ -342,5 +368,6 @@ def requirement_view(db: Session, row: Requirement) -> dict:
         row,
         area_slug=area_slug,
         account_name=account_name,
+        account_matrix=account_matrix,
         lock_owner=lock_owner,
     )

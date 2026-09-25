@@ -114,7 +114,7 @@ async function apply(){
 
 function template(){
   if(!hasPermission('budgets.import'))return;
-  const text='CUENTA;DENOMINACIÓN;PRESUPUESTO VIGENTE;PRE OBLIGADO ZE COMPRAS;OBLIGADO CAS\n215-22-01-000-000-000;ALIMENTOS Y BEBIDAS;54000000;19460054;1691756\n';
+  const text='CUENTA;DENOMINACIÓN;PRESUPUESTO VIGENTE;PRE OBLIGADO ZE COMPRAS;OBLIGADO CAS\n215-22-00-000-000-000;BIENES Y SERVICIOS DE CONSUMO;100000000;0;0\n215-22-01-000-000-000;ALIMENTOS Y BEBIDAS;54000000;0;0\n215-22-01-001-000-000;PARA PERSONAS;50000000;0;0\n215-22-01-002-000-000;PARA ANIMALES;4000000;0;0\n';
   const blob=new Blob(['\ufeff'+text],{type:'text/csv;charset=utf-8'});
   const url=URL.createObjectURL(blob),a=document.createElement('a');
   a.href=url;a.download='plantilla_presupuesto.csv';a.click();URL.revokeObjectURL(url);

@@ -142,7 +142,7 @@
             <div id="budgetYearsList" class="data-list"></div>
           </article>
           <article id="budgetImportPanel" class="panel">
-            <div class="panel-heading"><div><h2>Cargar o actualizar presupuesto</h2><p>Seleccione un año previamente creado. La validación y aplicación se realizan en el servidor.</p></div><div class="button-row"><button id="downloadTemplate" class="button secondary" type="button">Plantilla CSV</button><button id="backupExport" class="button secondary" type="button">Descargar respaldo</button></div></div>
+            <div class="panel-heading"><div><h2>Cargar o actualizar presupuesto</h2><p>Seleccione un año previamente creado. El sistema reconoce la jerarquía de cuentas y evita sumar dos veces subtotales y cuentas de detalle.</p></div><div class="button-row"><button id="downloadTemplate" class="button secondary" type="button">Plantilla CSV</button><button id="backupExport" class="button secondary" type="button">Descargar respaldo</button></div></div>
             <form id="budgetImportForm" class="upload-form">
               <label>Año a actualizar<select id="importYear" required></select></label>
               <label>Planilla Excel o CSV<input id="budgetFile" type="file" accept=".xlsx,.xls,.csv,.txt" required></label>

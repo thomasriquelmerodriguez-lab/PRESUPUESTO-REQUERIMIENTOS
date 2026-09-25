@@ -18,10 +18,9 @@ from app.core.exceptions import AppError, NotFoundError
 from app.core.security import ensure_aware, random_token, token_digest, utcnow
 from app.db.models import ImportPreviewCache
 from app.services.accounts import (
-    hierarchy_level,
-    matrix_code,
+    apply_account_hierarchy,
+    hierarchy_total,
     normalize_code,
-    parent_code,
     should_include_account,
 )
 from app.services.budgets import create_budget_version
@@ -178,13 +177,15 @@ def parse_budget_file(filename: str, content: bytes) -> dict:
                 # If the spreadsheet omits OBLIGADO CAS, preserve the value from
                 # the current budget version for the same account when applying.
                 "obligated_cas_provided": "cas" in columns,
-                "matrix_code": matrix_code(item["code"]),
-                "parent_code": parent_code(item["code"]),
-                "level": hierarchy_level(item["code"]),
             }
         )
     if not included_accounts:
         raise AppError("La planilla no contiene cuentas con presupuesto vigente mayor a cero.")
+
+    # Resolve the hierarchy only after all rows are known. This allows a parent
+    # such as 22-00-000-000-000 to contain 22-01..., which in turn contains
+    # 22-01-001... and 22-01-002..., without adding every level to the total.
+    included_accounts = apply_account_hierarchy(included_accounts)
     return {
         "filename": Path(filename).name[:255],
         "checksum": hashlib.sha256(content).hexdigest(),
@@ -192,9 +193,11 @@ def parse_budget_file(filename: str, content: bytes) -> dict:
         "valid_rows": len(unique),
         "included_rows": len(included_accounts),
         "excluded_rows": max(0, len(raw_rows) - len(included_accounts)),
-        "total_budget": sum(a["budget"] for a in included_accounts if a["level"] == 0) or sum(a["budget"] for a in included_accounts),
-        "total_new_requirements": sum(a["base_new_requirements"] for a in included_accounts if a["level"] > 0),
-        "total_obligated_cas": sum(a["obligated_cas"] for a in included_accounts if a["level"] > 0),
+        "total_budget": sum(a["budget"] for a in included_accounts if a["level"] == 0),
+        # These two columns can also be repeated at parent/child levels in source
+        # spreadsheets, so calculate them without double counting branches.
+        "total_new_requirements": hierarchy_total(included_accounts, "base_new_requirements"),
+        "total_obligated_cas": hierarchy_total(included_accounts, "obligated_cas"),
         "sample": raw_rows[:120],
         "accounts": included_accounts,
     }
