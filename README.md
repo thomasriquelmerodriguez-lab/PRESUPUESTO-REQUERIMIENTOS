@@ -116,3 +116,7 @@ La migración se aplica automáticamente y conserva el volumen de PostgreSQL. No
 ## Años presupuestarios configurables (v2.3.0)
 
 El módulo **Actualizar presupuesto** permite crear nuevos años por área antes de cargar su planilla. Los años se mantienen separados por Municipal, Salud y Educación y pueden agregarse sin modificar código ni reinicializar la base de datos. Consulte `ACTUALIZACION_ANOS_PRESUPUESTARIOS.md` para el procedimiento de actualización y uso.
+
+## Actualización de jerarquía presupuestaria
+
+La carga de presupuesto reconoce filas de resumen y detalle por código. Consulte `ACTUALIZACION_JERARQUIA_PRESUPUESTARIA.md` para la regla aplicada y el procedimiento de despliegue en Render.

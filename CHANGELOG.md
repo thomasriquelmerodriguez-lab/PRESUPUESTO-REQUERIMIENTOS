@@ -41,3 +41,9 @@
 - Se agregó revocación de sesiones al cambiar clave, estado, áreas o privilegios.
 - Se agregaron eventos de auditoría para creación, actualización y restablecimiento de claves.
 - Se agregó migración Alembic para la tabla `user_permissions`.
+
+## 2026-09-25 — Jerarquía presupuestaria
+- Corrige doble contabilización de filas padre e hijas al cargar presupuestos.
+- Soporta jerarquía explícita `22-00 > 22-01 > 22-01-001/002` y su equivalente con prefijo `215-`.
+- Recalcula automáticamente metadatos y total de presupuestos existentes mediante Alembic.
+- Mantiene compatibilidad con planillas que no incluyen la fila resumen superior.
