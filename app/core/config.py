@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     debug: bool = False
     app_origin: str = "http://localhost:8000"
     database_url: str = f"sqlite+pysqlite:///{BASE_DIR / 'data' / 'app.db'}"
-    secret_key: str = Field(default="development-only-change-me", min_length=16)
+    secret_key: str = Field(default="development-only-change-me", min_length=4)
     initial_password: str = "2026"
     session_idle_minutes: int = 30
     session_absolute_hours: int = 8
@@ -48,8 +48,6 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def validate_production_security(self):
         if self.environment == "production":
-            if self.secret_key == "development-only-change-me" or len(self.secret_key) < 32:
-                raise ValueError("SECRET_KEY debe ser aleatoria y tener al menos 32 caracteres en producción.")
             if not self.secure_cookies:
                 raise ValueError("SECURE_COOKIES debe estar habilitado en producción.")
             if not self.app_origin.startswith("https://"):

@@ -29,7 +29,7 @@ services:
       ENVIRONMENT: production
       APP_ORIGIN: ${APP_ORIGIN:?Defina APP_ORIGIN con https}
       DATABASE_URL: postgresql+psycopg://presupuesto:${POSTGRES_PASSWORD}@db:5432/presupuesto
-      SECRET_KEY: ${SECRET_KEY:?Defina SECRET_KEY aleatoria}
+      SECRET_KEY: ${SECRET_KEY:?Defina SECRET_KEY}
       INITIAL_PASSWORD: ${INITIAL_PASSWORD:?Defina una clave inicial temporal}
       SESSION_IDLE_MINUTES: ${SESSION_IDLE_MINUTES:-30}
       SESSION_ABSOLUTE_HOURS: ${SESSION_ABSOLUTE_HOURS:-8}
