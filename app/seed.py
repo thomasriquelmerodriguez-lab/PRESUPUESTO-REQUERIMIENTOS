@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
+import time
 from datetime import date
 
 from sqlalchemy import func, select, text
@@ -15,6 +17,7 @@ from app.services.accounts import hierarchy_level, matrix_code, parent_code
 from app.services.budgets import create_budget_version
 
 settings = get_settings()
+logger = logging.getLogger("app.seed")
 
 AREA_DEFINITIONS = {
     "municipal": "Municipal",
@@ -65,6 +68,7 @@ USER_DEFINITIONS = [
 
 
 def seed_database(db: Session) -> None:
+    logger.info("[seed] Inicio de carga inicial")
     areas: dict[str, Area] = {}
     for slug, name in AREA_DEFINITIONS.items():
         area = db.execute(select(Area).where(Area.slug == slug)).scalar_one_or_none()
@@ -73,6 +77,8 @@ def seed_database(db: Session) -> None:
             db.add(area)
             db.flush()
         areas[slug] = area
+
+    logger.info("[seed] Áreas verificadas")
 
     users: dict[str, User] = {}
     permissions_initialized = int(db.execute(select(func.count(UserPermission.user_id))).scalar_one()) > 0
@@ -101,6 +107,8 @@ def seed_database(db: Session) -> None:
                     db.add(UserPermission(user_id=user.id, permission=permission))
     db.flush()
 
+    logger.info("[seed] Usuarios y permisos verificados")
+
     municipal = areas["municipal"]
     budget_count = db.execute(
         select(func.count(BudgetVersion.id)).where(BudgetVersion.area_id == municipal.id)
@@ -123,6 +131,7 @@ def seed_database(db: Session) -> None:
             for item in raw_accounts
             if int(item.get("budget", 0)) > 0
         ]
+        logger.info("[seed] Cargando presupuesto municipal 2026 (%s cuentas)", len(accounts))
         create_budget_version(
             db,
             area_slug="municipal",
@@ -134,6 +143,8 @@ def seed_database(db: Session) -> None:
             is_seed=True,
         )
 
+    logger.info("[seed] Presupuesto municipal verificado")
+
     request_count = int(
         db.execute(
             select(func.count(Requirement.id)).where(Requirement.area_id == municipal.id)
@@ -143,6 +154,7 @@ def seed_database(db: Session) -> None:
         requirements_path = BASE_DIR / "data" / "seed" / "requirements_municipal_2026.json"
         raw_requirements = json.loads(requirements_path.read_text(encoding="utf-8"))
         manager_id = users["encargado de presupuesto"].id
+        logger.info("[seed] Cargando requerimientos municipales 2026 (%s registros)", len(raw_requirements))
         for item in raw_requirements:
             allocation = next((a for a in item.get("allocations", []) if a.get("code")), {})
             db.add(
@@ -165,20 +177,56 @@ def seed_database(db: Session) -> None:
                     updated_by=manager_id,
                 )
             )
-    db.commit()
+    logger.info("[seed] Datos preparados para confirmación")
 
 
 def seed_database_with_lock(db: Session) -> None:
+    """Seed idempotente sin esperas indefinidas en PostgreSQL.
+
+    En Render puede existir brevemente una instancia anterior durante un deploy.
+    Usamos un advisory lock transaccional y no bloqueante para evitar que el
+    proceso quede esperando y nunca alcance a abrir el puerto HTTP.
+    """
     dialect = db.get_bind().dialect.name
     lock_id = 918_226_031
+
     if dialect == "postgresql":
-        db.execute(text("SELECT pg_advisory_lock(:lock_id)"), {"lock_id": lock_id})
+        # Evita bloqueos largos por transacciones ajenas durante un deploy.
+        db.execute(text("SET LOCAL lock_timeout = '5s'"))
+        db.execute(text("SET LOCAL statement_timeout = '120s'"))
+
+        acquired = False
+        for attempt in range(1, 16):
+            acquired = bool(
+                db.execute(
+                    text("SELECT pg_try_advisory_xact_lock(:lock_id)"),
+                    {"lock_id": lock_id},
+                ).scalar_one()
+            )
+            if acquired:
+                logger.info("[seed] Bloqueo de inicialización adquirido")
+                break
+            logger.warning(
+                "[seed] Otra instancia está inicializando la base (intento %s/15)",
+                attempt,
+            )
+            db.rollback()
+            time.sleep(1)
+
+        if not acquired:
+            logger.warning(
+                "[seed] No se obtuvo el bloqueo de inicialización; se omite esta ejecución para evitar bloquear el arranque."
+            )
+            return
+
     try:
         seed_database(db)
-    finally:
-        if dialect == "postgresql":
-            db.execute(text("SELECT pg_advisory_unlock(:lock_id)"), {"lock_id": lock_id})
-            db.commit()
+        db.commit()
+        logger.info("[seed] Carga inicial completada")
+    except Exception:
+        db.rollback()
+        logger.exception("[seed] Falló la carga inicial")
+        raise
 
 
 def main() -> None:
