@@ -98,6 +98,63 @@ def hierarchy_level(code: str) -> int:
     return sum(1 for segment in parts[start:] if _is_nonzero(segment))
 
 
+
+
+def hierarchy_order(code: str) -> int:
+    """Return the structural accounting order, independent of uploaded rows.
+
+    Order 1 is the item summary itself, e.g. 215-22-00-000-000-000 or
+    22-00-000-000-000. Order 2 is 22-01-000..., order 3 is
+    22-01-001..., and so on. Unlike ``apply_account_hierarchy`` this never
+    promotes a child just because its parent is absent from the spreadsheet.
+    """
+    return hierarchy_level(code) + 1
+
+
+def is_first_order_account(code: str) -> bool:
+    """True only for structural first-order accounts such as 22-00-000-000-000."""
+    parts = code_parts(code)
+    if len(parts) < 2:
+        return False
+    start = _hierarchy_start(parts)
+    return all(not _is_nonzero(segment) for segment in parts[start:])
+
+
+def first_order_budget_total(accounts: Iterable[dict], value_key: str = "budget") -> int:
+    """Sum only structural first-order accounts.
+
+    Child rows and subtotals remain in the catalog but never increase the
+    overall budget. This is intentionally stricter than catalog roots.
+    """
+    return sum(
+        max(0, int(item.get(value_key, 0) or 0))
+        for item in accounts
+        if is_first_order_account(str(item.get("code") or ""))
+    )
+
+
+def first_order_group(code: str) -> str:
+    """Return the expenditure item group used to validate first-order coverage."""
+    parts = code_parts(code)
+    if not parts:
+        return ""
+    if parts[0] == "215" and len(parts) >= 2:
+        return "-".join(parts[:2])
+    return parts[0]
+
+
+def has_complete_first_order_coverage(accounts: Iterable[dict]) -> bool:
+    """Whether every expenditure item represented has its order-1 summary row."""
+    rows = list(accounts)
+    groups = {first_order_group(str(item.get("code") or "")) for item in rows}
+    groups.discard("")
+    first_groups = {
+        first_order_group(str(item.get("code") or ""))
+        for item in rows
+        if is_first_order_account(str(item.get("code") or ""))
+    }
+    return bool(groups) and groups.issubset(first_groups)
+
 def matrix_code(code: str) -> str:
     """Return the structural top account below the item.
 

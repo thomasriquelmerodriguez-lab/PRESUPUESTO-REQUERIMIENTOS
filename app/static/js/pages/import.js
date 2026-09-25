@@ -8,11 +8,12 @@ function previewHtml(data){
     ['Cuentas válidas',data.valid_rows],
     ['Incluidas',data.included_rows],
     ['Descartadas',data.excluded_rows],
-    ['Presupuesto',money(data.total_budget)],
+    ['Presupuesto (solo 1.er orden)',money(data.total_budget)],
+    ['Cuentas de 1.er orden',data.first_order_accounts??0],
     ['Pre obligado planilla (referencia)',money(data.total_new_requirements)],
     ['Obligado CAS',money(data.total_obligated_cas)],
   ];
-  const rows=data.sample.slice(0,30).map(row=>`<article class="data-card"><div><h3>${escapeHtml(row.code||'Sin cuenta')}</h3><div class="meta">${escapeHtml(row.name||'Sin denominación')}</div></div><div class="data-fields"><div class="data-field"><span>Presupuesto</span><strong>${money(row.budget)}</strong></div><div class="data-field"><span>Pre obligado planilla (referencia)</span><strong>${money(row.base_new_requirements)}</strong></div><div class="data-field"><span>Obligado CAS</span><strong>${money(row.obligated_cas)}</strong></div></div><span class="status ${row.included?'ok':'warn'}">${escapeHtml(row.reason)}</span></article>`).join('');
+  const rows=data.sample.slice(0,30).map(row=>`<article class="data-card"><div><h3>${escapeHtml(row.code||'Sin cuenta')}</h3><div class="meta">${escapeHtml(row.name||'Sin denominación')}</div></div><div class="data-fields"><div class="data-field"><span>Presupuesto</span><strong>${money(row.budget)}</strong></div><div class="data-field"><span>Orden jerárquico</span><strong>${row.hierarchy_order?`Orden ${row.hierarchy_order}`:'—'}</strong></div><div class="data-field"><span>Pre obligado planilla (referencia)</span><strong>${money(row.base_new_requirements)}</strong></div><div class="data-field"><span>Obligado CAS</span><strong>${money(row.obligated_cas)}</strong></div></div><span class="status ${row.included?'ok':'warn'}">${escapeHtml(row.reason)}</span></article>`).join('');
   return `<div class="preview-grid">${stats.map(([label,value])=>`<div class="preview-stat"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join('')}</div><div class="button-row"><button id="cancelImport" class="button ghost" type="button">Cancelar</button><button id="applyImport" class="button primary" type="button">Aplicar presupuesto</button></div><div class="data-list">${rows}</div>`;
 }
 

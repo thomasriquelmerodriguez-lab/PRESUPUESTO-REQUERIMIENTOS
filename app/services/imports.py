@@ -19,7 +19,11 @@ from app.core.security import ensure_aware, random_token, token_digest, utcnow
 from app.db.models import ImportPreviewCache
 from app.services.accounts import (
     apply_account_hierarchy,
+    first_order_budget_total,
+    hierarchy_order,
     hierarchy_total,
+    has_complete_first_order_coverage,
+    is_first_order_account,
     normalize_code,
     should_include_account,
 )
@@ -155,6 +159,8 @@ def parse_budget_file(filename: str, content: bytes) -> dict:
             "code": code,
             "name": name,
             "budget": budget,
+            "hierarchy_order": hierarchy_order(code) if code else None,
+            "first_order": is_first_order_account(code) if code else False,
             "base_new_requirements": new_req,
             "obligated_cas": cas,
             "included": included,
@@ -182,6 +188,22 @@ def parse_budget_file(filename: str, content: bytes) -> dict:
     if not included_accounts:
         raise AppError("La planilla no contiene cuentas con presupuesto vigente mayor a cero.")
 
+    # The total budget is defined only by structural first-order accounts.
+    # Validate against all valid rows (including zero-budget summaries) so a
+    # missing order-1 row cannot silently promote a lower-order subtotal.
+    valid_hierarchy_rows = [
+        {"code": item["code"], "budget": item["budget"]}
+        for item in unique.values()
+        if item.get("code") and item.get("name")
+    ]
+    if not has_complete_first_order_coverage(valid_hierarchy_rows):
+        raise AppError(
+            "La planilla no contiene todas las cuentas de primer orden necesarias para calcular el presupuesto total. "
+            "Incluya las cuentas resumen, por ejemplo 215-22-00-000-000-000 (o 22-00-000-000-000).",
+            422,
+            "missing_first_order_accounts",
+        )
+
     # Resolve the hierarchy only after all rows are known. This allows a parent
     # such as 22-00-000-000-000 to contain 22-01..., which in turn contains
     # 22-01-001... and 22-01-002..., without adding every level to the total.
@@ -193,7 +215,11 @@ def parse_budget_file(filename: str, content: bytes) -> dict:
         "valid_rows": len(unique),
         "included_rows": len(included_accounts),
         "excluded_rows": max(0, len(raw_rows) - len(included_accounts)),
-        "total_budget": sum(a["budget"] for a in included_accounts if a["level"] == 0),
+        # The overall budget is strictly the sum of structural first-order
+        # accounts (e.g. 215-22-00-000-000-000). Children are displayed but
+        # never promoted into the total when a parent is absent.
+        "total_budget": first_order_budget_total(included_accounts),
+        "first_order_accounts": sum(1 for a in valid_hierarchy_rows if is_first_order_account(a["code"])),
         # These two columns can also be repeated at parent/child levels in source
         # spreadsheets, so calculate them without double counting branches.
         "total_new_requirements": hierarchy_total(included_accounts, "base_new_requirements"),
@@ -220,7 +246,7 @@ def save_preview(db: Session, *, user_id: str, area: str, year: int, parsed: dic
     db.flush()
     response = {key: parsed[key] for key in (
         "filename", "rows_read", "valid_rows", "included_rows", "excluded_rows",
-        "total_budget", "total_new_requirements", "total_obligated_cas", "sample"
+        "total_budget", "first_order_accounts", "total_new_requirements", "total_obligated_cas", "sample"
     )}
     response.update({"token": raw_token, "area": area, "year": year})
     return raw_token, response

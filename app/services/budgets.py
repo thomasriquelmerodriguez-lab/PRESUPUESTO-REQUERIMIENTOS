@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.core.exceptions import ConflictError, NotFoundError
 from app.db.models import Area, BudgetAccount, BudgetPeriod, BudgetVersion, Requirement
-from app.services.accounts import apply_account_hierarchy, matrix_code
+from app.services.accounts import apply_account_hierarchy, first_order_budget_total, matrix_code
 
 
 def get_area(db: Session, slug: str) -> Area:
@@ -442,15 +442,10 @@ def create_budget_version(
         .values(active=False)
     )
 
-    codes = {str(item["code"]): item for item in accounts}
-    roots = [
-        item
-        for item in accounts
-        if not item.get("parent_code") or item.get("parent_code") not in codes
-    ]
-    total_budget = sum(int(item.get("budget", 0)) for item in roots)
-    if not total_budget:
-        total_budget = sum(int(item.get("budget", 0)) for item in accounts)
+    # The budget total is based only on structural first-order accounts.
+    # Never promote a child/subtotal into the overall total just because its
+    # parent row is missing from the uploaded spreadsheet.
+    total_budget = first_order_budget_total(accounts)
 
     version = BudgetVersion(
         area_id=area.id,
