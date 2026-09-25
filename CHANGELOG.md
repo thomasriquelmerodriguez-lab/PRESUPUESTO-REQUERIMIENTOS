@@ -47,3 +47,9 @@
 - Soporta jerarquía explícita `22-00 > 22-01 > 22-01-001/002` y su equivalente con prefijo `215-`.
 - Recalcula automáticamente metadatos y total de presupuestos existentes mediante Alembic.
 - Mantiene compatibilidad con planillas que no incluyen la fila resumen superior.
+
+## 2026-09-25 — Total por primer orden jerárquico
+- El total del presupuesto importado suma exclusivamente cuentas de orden 1.
+- Las cuentas hijas ya no se promueven al total si falta una fila padre.
+- La vista previa informa cuántas cuentas de primer orden detectó y muestra el orden de cada fila.
+- Se incorpora una migración conservadora para corregir versiones activas cuando existe cobertura completa de cuentas de primer orden.
