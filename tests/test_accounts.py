@@ -69,3 +69,33 @@ def test_missing_summary_row_becomes_compatible_root():
     assert by_code["215-22-01-000-000-000"]["level"] == 0
     assert by_code["215-22-01-001-000-000"]["level"] == 1
     assert by_code["215-22-01-001-000-000"]["matrix_code"] == "215-22-01-000-000-000"
+
+
+def test_first_order_budget_total_is_strict():
+    from app.services.accounts import first_order_budget_total, hierarchy_order, is_first_order_account
+
+    rows = [
+        {"code": "215-21-00-000-000-000", "budget": 1_000},
+        {"code": "215-21-01-000-000-000", "budget": 700},
+        {"code": "215-21-01-001-000-000", "budget": 700},
+        {"code": "215-22-00-000-000-000", "budget": 2_000},
+        {"code": "215-22-01-000-000-000", "budget": 1_500},
+        {"code": "215-22-01-001-000-000", "budget": 1_500},
+    ]
+    assert hierarchy_order("215-22-00-000-000-000") == 1
+    assert hierarchy_order("215-22-01-000-000-000") == 2
+    assert hierarchy_order("215-22-01-001-000-000") == 3
+    assert is_first_order_account("215-22-00-000-000-000") is True
+    assert is_first_order_account("215-22-01-000-000-000") is False
+    assert first_order_budget_total(rows) == 3_000
+
+
+def test_first_order_budget_total_does_not_promote_missing_parent():
+    from app.services.accounts import first_order_budget_total
+
+    rows = [
+        {"code": "215-22-01-000-000-000", "budget": 600},
+        {"code": "215-22-01-001-000-000", "budget": 250},
+        {"code": "215-22-01-002-000-000", "budget": 350},
+    ]
+    assert first_order_budget_total(rows) == 0

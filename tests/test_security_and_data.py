@@ -198,6 +198,7 @@ def test_new_year_can_receive_budget_upload(client):
     assert created.status_code == 200
     csv_data = (
         "CUENTA;DENOMINACIÓN;PRESUPUESTO VIGENTE;PRE OBLIGADO ZE COMPRAS;OBLIGADO CAS\n"
+        "215-22-00-000-000-000;BIENES Y SERVICIOS DE CONSUMO;54000000;0;0\n"
         "215-22-01-000-000-000;ALIMENTOS Y BEBIDAS;54000000;0;0\n"
         "215-22-01-001-000-000;PARA PERSONAS;50000000;0;0\n"
         "215-22-01-002-000-000;PARA ANIMALES;4000000;0;0\n"
@@ -245,6 +246,7 @@ def test_budget_import_preserves_existing_cas_when_cas_column_is_omitted(client)
     expected_cas = target["obligated_cas"]
     csv_data = (
         "CUENTA;DENOMINACIÓN;PRESUPUESTO VIGENTE\n"
+        "215-22-00-000-000-000;BIENES Y SERVICIOS DE CONSUMO;54000000\n"
         "215-22-01-000-000-000;ALIMENTOS Y BEBIDAS;54000000\n"
         "215-22-01-001-000-000;PARA PERSONAS;50000000\n"
         "215-22-01-002-000-000;PARA ANIMALES;4000000\n"
@@ -271,3 +273,22 @@ def test_budget_import_preserves_existing_cas_when_cas_column_is_omitted(client)
     assert updated["available"] == (
         updated["budget"] - updated["new_requirements"] - updated["obligated_cas"]
     )
+
+
+def test_budget_upload_requires_first_order_summary(client):
+    csrf = login(client)
+    headers = {"origin": "http://testserver", "x-csrf-token": csrf}
+    client.post("/api/budgets/educacion/years", json={"year": 2029}, headers=headers)
+    csv_data = (
+        "CUENTA;DENOMINACIÓN;PRESUPUESTO VIGENTE;PRE OBLIGADO ZE COMPRAS;OBLIGADO CAS\n"
+        "215-22-01-000-000-000;ALIMENTOS Y BEBIDAS;54000000;0;0\n"
+        "215-22-01-001-000-000;PARA PERSONAS;50000000;0;0\n"
+    ).encode("utf-8")
+    preview = client.post(
+        "/api/budgets/import/preview",
+        data={"area": "educacion", "year": "2029"},
+        files={"file": ("presupuesto_sin_primer_orden.csv", csv_data, "text/csv")},
+        headers=headers,
+    )
+    assert preview.status_code == 422
+    assert "primer orden" in preview.text.lower()
