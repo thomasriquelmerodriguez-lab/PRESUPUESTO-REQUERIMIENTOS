@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reporte de requerimientos</title>
+  <link rel="stylesheet" href="/static/css/report.css">
+</head>
+<body>
+  <header class="report-header">
+    <img src="/static/img/municipalidad-illapel.png" alt="Municipalidad de Illapel">
+    <div>
+      <h1>Reporte de requerimientos</h1>
+      <p>{{ area }} · Año {{ year }}</p>
+    </div>
+  </header>
+  <section class="report-meta">
+    <div><span>Cuenta matriz</span><strong>{{ matrix }} · {{ matrix_name }}</strong></div>
+    {% if account %}<div><span>Cuenta específica</span><strong>{{ account }}</strong></div>{% endif %}
+    <div><span>Cantidad de requerimientos</span><strong>{{ total }}</strong></div>
+    <div><span>Monto total</span><strong>${{ "{:,.0f}".format(total_amount).replace(",", ".") }}</strong></div>
+  </section>
+  <h2>Resumen por cuenta</h2>
+  <table>
+    <thead><tr><th>Cuenta</th><th>Denominación</th><th>Cantidad</th><th class="number">Monto</th></tr></thead>
+    <tbody>
+      {% for code, item in summary %}
+      <tr><td>{{ code }}</td><td>{{ item.name }}</td><td>{{ item.count }}</td><td class="number">${{ "{:,.0f}".format(item.amount).replace(",", ".") }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <h2>Detalle de expedientes</h2>
+  <table>
+    <thead><tr><th>Fecha</th><th>Expediente</th><th>Materia</th><th>Cuenta</th><th class="number">Monto</th></tr></thead>
+    <tbody>
+      {% for item in records %}
+      <tr>
+        <td>{{ item.request_date.strftime("%d-%m-%Y") }}</td>
+        <td>{{ item.expedient }}</td>
+        <td>{{ item.subject }}</td>
+        <td>{{ item.account_code }}</td>
+        <td class="number">${{ "{:,.0f}".format(item.amount).replace(",", ".") }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <footer>Generado el {{ generated_at }} por {{ generated_by }}.</footer>
+  <script src="/static/js/report.js" defer></script>
+</body>
+</html>
