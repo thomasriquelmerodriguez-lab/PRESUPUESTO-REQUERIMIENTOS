@@ -1,4 +1,16 @@
 
+## 2.6.0 - Dashboard de gestión presupuestaria
+
+- Nuevo módulo **Dashboard presupuestario** por área y año.
+- Indicadores: presupuesto vigente, Obligado CAS, requerimientos, saldo disponible y porcentaje comprometido.
+- Desglose sin doble contabilización de jerarquías desde 215-21.
+- Filtros por cuenta de primer orden y cuenta específica.
+- Evolución mensual de requerimientos.
+- Semáforo de ejecución, cuentas críticas y ranking de cuentas con mayor monto de requerimientos.
+- Advertencia de requerimientos asociados a cuentas que ya no existen en el presupuesto vigente.
+- Reporte imprimible/PDF del dashboard.
+
+
 ## Obligado CAS por cuenta — 2026-08-11
 - Backfill de Obligado CAS municipal 2026 por código de cuenta en todas las versiones existentes.
 - Disponible por cuenta calculado explícitamente como presupuesto menos requerimientos menos CAS.
