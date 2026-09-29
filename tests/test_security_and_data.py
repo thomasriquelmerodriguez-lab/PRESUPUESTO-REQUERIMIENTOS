@@ -430,3 +430,38 @@ def test_user_loaded_budget_can_be_deleted_and_previous_version_restored(client)
     assert deleted.json()["restored_version"] is not None
     catalog = client.get("/api/budgets/salud/2032/catalog").json()
     assert catalog["total_budget"] == 100
+
+
+def test_seed_budget_version_can_be_deleted(client):
+    from sqlalchemy import select
+
+    from app.db.base import SessionLocal
+    from app.db.models import Area, BudgetVersion
+    from app.services.budgets import delete_budget_version
+
+    with SessionLocal() as db:
+        area = db.execute(select(Area).where(Area.slug == "salud")).scalar_one()
+        version = BudgetVersion(
+            area_id=area.id,
+            year=2099,
+            version_number=1,
+            active=True,
+            is_seed=True,
+            source_name="base_prueba.csv",
+            source_checksum="a" * 64,
+            total_budget=1,
+        )
+        db.add(version)
+        db.commit()
+        version_id = version.id
+
+    with SessionLocal() as db:
+        result = delete_budget_version(db, "salud", version_id)
+        assert result["was_seed"] is True
+        assert result["was_active"] is True
+        assert result["restored_version"] is None
+        db.commit()
+        remaining = db.execute(
+            select(BudgetVersion).where(BudgetVersion.id == version_id)
+        ).scalar_one_or_none()
+        assert remaining is None
