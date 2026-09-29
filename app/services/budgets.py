@@ -5,9 +5,9 @@ from collections import defaultdict
 from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
-from app.core.exceptions import ConflictError, NotFoundError
+from app.core.exceptions import AppError, ConflictError, NotFoundError
 from app.db.models import Area, BudgetAccount, BudgetPeriod, BudgetVersion, Requirement
-from app.services.accounts import first_order_budget_total, matrix_code, rollup_budget_by_hierarchy
+from app.services.accounts import apply_account_hierarchy, first_order_budget_total, matrix_code
 
 
 def get_area(db: Session, slug: str) -> Area:
@@ -384,6 +384,182 @@ def available_for_account(
     return int(account.budget) - int(account.obligated_cas) - consumed
 
 
+
+def build_replacement_snapshot(
+    db: Session,
+    *,
+    area_slug: str,
+    year: int,
+    uploaded_accounts: list[dict],
+) -> dict:
+    """Build the next active budget snapshot using replace-by-code semantics.
+
+    Existing accounts are retained when they are absent from the uploaded file.
+    Every uploaded accounting code REPLACES the previous value for that code;
+    new codes are inserted. No budget amount is ever added to the previous value.
+
+    This supports both full current-budget spreadsheets and smaller modification
+    spreadsheets. The overall budget is always recalculated from first-order
+    accounts in the resulting snapshot.
+    """
+    area = get_area(db, area_slug)
+    previous = db.execute(
+        select(BudgetVersion).where(
+            BudgetVersion.area_id == area.id,
+            BudgetVersion.year == year,
+            BudgetVersion.active.is_(True),
+        )
+    ).scalar_one_or_none()
+
+    existing_accounts: dict[str, dict] = {}
+    if previous:
+        rows = db.execute(
+            select(BudgetAccount).where(BudgetAccount.budget_version_id == previous.id)
+        ).scalars()
+        for row in rows:
+            existing_accounts[row.code] = {
+                "code": row.code,
+                "name": row.name,
+                "budget": int(row.budget),
+                "base_new_requirements": int(row.base_new_requirements),
+                "obligated_cas": int(row.obligated_cas),
+                "obligated_cas_provided": True,
+            }
+
+    merged = dict(existing_accounts)
+    new_count = 0
+    modified_count = 0
+    unchanged_uploaded_count = 0
+    uploaded_status: dict[str, str] = {}
+
+    for uploaded in uploaded_accounts:
+        code = str(uploaded["code"])
+        old = merged.get(code)
+        cas_provided = bool(uploaded.get("obligated_cas_provided", False))
+        new_provided = bool(uploaded.get("base_new_requirements_provided", False))
+        replacement = {
+            "code": code,
+            "name": str(uploaded.get("name") or (old or {}).get("name") or code),
+            "budget": int(uploaded.get("budget", 0) or 0),
+            "base_new_requirements": (
+                int(uploaded.get("base_new_requirements", 0) or 0)
+                if new_provided
+                else int((old or {}).get("base_new_requirements", 0) or 0)
+            ),
+            "obligated_cas": (
+                int(uploaded.get("obligated_cas", 0) or 0)
+                if cas_provided
+                else int((old or {}).get("obligated_cas", 0) or 0)
+            ),
+            # Values are now explicit in the merged snapshot.
+            "obligated_cas_provided": True,
+            "base_new_requirements_provided": True,
+        }
+        if old is None:
+            new_count += 1
+            uploaded_status[code] = "new"
+        else:
+            comparable_old = (
+                str(old.get("name") or ""),
+                int(old.get("budget", 0) or 0),
+                int(old.get("base_new_requirements", 0) or 0),
+                int(old.get("obligated_cas", 0) or 0),
+            )
+            comparable_new = (
+                replacement["name"],
+                replacement["budget"],
+                replacement["base_new_requirements"],
+                replacement["obligated_cas"],
+            )
+            if comparable_old == comparable_new:
+                unchanged_uploaded_count += 1
+                uploaded_status[code] = "unchanged"
+            else:
+                modified_count += 1
+                uploaded_status[code] = "modified"
+        merged[code] = replacement
+
+    accounts = apply_account_hierarchy(
+        [merged[code] for code in sorted(merged)]
+    )
+    total_budget = first_order_budget_total(accounts)
+    if total_budget <= 0:
+        raise AppError(
+            "El presupuesto resultante no contiene cuentas de primer orden con monto vigente. "
+            "Incluya al menos una cuenta de primer orden, por ejemplo 215-22-00-000-000-000.",
+            422,
+            "missing_first_order_accounts",
+        )
+
+    return {
+        "accounts": accounts,
+        "total_budget": total_budget,
+        "previous_total_budget": int(previous.total_budget) if previous else 0,
+        "base_version_id": previous.id if previous else None,
+        "base_version_number": previous.version_number if previous else None,
+        "new_accounts": new_count,
+        "modified_accounts": modified_count,
+        "unchanged_uploaded_accounts": unchanged_uploaded_count,
+        "retained_accounts": max(0, len(existing_accounts) - sum(1 for item in uploaded_accounts if str(item["code"]) in existing_accounts)),
+        "uploaded_status": uploaded_status,
+    }
+
+
+def delete_budget_version(db: Session, area_slug: str, version_id: str) -> dict:
+    """Delete a user-loaded budget version and roll back if it was active."""
+    area = get_area(db, area_slug)
+    version = db.execute(
+        select(BudgetVersion).where(
+            BudgetVersion.id == version_id,
+            BudgetVersion.area_id == area.id,
+        )
+    ).scalar_one_or_none()
+    if not version:
+        raise NotFoundError("El presupuesto cargado no existe.")
+    if version.is_seed:
+        raise ConflictError(
+            "La base incorporada del sistema no se puede eliminar. Puede restaurarla si necesita volver a esa versión."
+        )
+
+    year = version.year
+    was_active = bool(version.active)
+    deleted_version_number = version.version_number
+    source_name = version.source_name
+
+    # Determine rollback target before deleting the current snapshot.
+    rollback = None
+    if was_active:
+        rollback = (
+            db.execute(
+                select(BudgetVersion)
+                .where(
+                    BudgetVersion.area_id == area.id,
+                    BudgetVersion.year == year,
+                    BudgetVersion.id != version.id,
+                )
+                .order_by(BudgetVersion.version_number.desc())
+            )
+            .scalars()
+            .first()
+        )
+
+    db.delete(version)
+    db.flush()  # release the one-active-version constraint before rollback
+
+    if rollback:
+        rollback.active = True
+        db.flush()
+
+    return {
+        "id": version_id,
+        "year": year,
+        "version_number": deleted_version_number,
+        "source_name": source_name,
+        "was_active": was_active,
+        "restored_version": rollback.version_number if rollback else None,
+        "restored_version_id": rollback.id if rollback else None,
+    }
+
 def create_budget_version(
     db: Session,
     *,
@@ -395,10 +571,12 @@ def create_budget_version(
     user_id: str,
     is_seed: bool = False,
 ) -> BudgetVersion:
-    # Normalize parent/level/matrix against the complete uploaded catalog before
-    # totals are calculated. Parent summary rows therefore do not count again as
-    # independent budget lines.
-    accounts = rollup_budget_by_hierarchy(accounts)
+    # The uploaded/merged snapshot is authoritative: amounts are REPLACED by
+    # accounting code, never added to the previous budget.  We only resolve the
+    # hierarchy metadata here (parent/level/matrix); we do not recalculate parent
+    # amounts from children because the spreadsheet already represents the current
+    # budget values for every level.
+    accounts = apply_account_hierarchy(accounts)
 
     area = get_area(db, area_slug)
     db.execute(

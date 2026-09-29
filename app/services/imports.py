@@ -14,19 +14,18 @@ from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
-from app.core.exceptions import AppError, NotFoundError
+from app.core.exceptions import AppError, ConflictError, NotFoundError
 from app.core.security import ensure_aware, random_token, token_digest, utcnow
 from app.db.models import ImportPreviewCache
 from app.services.accounts import (
+    apply_account_hierarchy,
     first_order_budget_total,
     hierarchy_order,
     hierarchy_total,
-    has_complete_first_order_coverage,
     is_first_order_account,
     normalize_code,
-    rollup_budget_by_hierarchy,
 )
-from app.services.budgets import create_budget_version
+from app.services.budgets import active_budget_version, build_replacement_snapshot, create_budget_version
 
 settings = get_settings()
 
@@ -186,63 +185,32 @@ def parse_budget_file(filename: str, content: bytes) -> dict:
     if not unique:
         raise AppError("La planilla no contiene cuentas presupuestarias válidas.")
 
-    # Validate hierarchy against every valid row, including zero-value summary
-    # rows. A summary row may legitimately arrive with zero because its amount
-    # will be calculated from its children below.
-    valid_hierarchy_rows = [
-        {"code": item["code"], "budget": item["budget"]}
-        for item in unique.values()
-        if item.get("code") and item.get("name")
-    ]
-    if not has_complete_first_order_coverage(valid_hierarchy_rows):
-        raise AppError(
-            "La planilla no contiene todas las cuentas de primer orden necesarias para calcular el presupuesto total. "
-            "Incluya las cuentas resumen, por ejemplo 215-22-00-000-000-000 (o 22-00-000-000-000).",
-            422,
-            "missing_first_order_accounts",
-        )
-
-    # Build the complete catalog first, including zero-value summary rows, and
-    # then roll the budget upward. Every parent becomes the exact sum of its
-    # immediate child branches; leaves keep the amount uploaded in the file.
-    candidate_accounts = [
+    # Uploaded values are authoritative for their accounting code. We do not
+    # add them to the previous budget and we do not overwrite parent amounts by
+    # summing children. The merge with the currently active budget is prepared
+    # later, inside save_preview(), where database state is available.
+    candidate_accounts = apply_account_hierarchy([
         {
             "code": item["code"],
             "name": item["name"],
-            "budget": item["budget"],
-            "base_new_requirements": item["base_new_requirements"],
-            "obligated_cas": item["obligated_cas"],
+            "budget": int(item["budget"]),
+            "base_new_requirements": int(item["base_new_requirements"]),
+            "base_new_requirements_provided": "new" in columns,
+            "obligated_cas": int(item["obligated_cas"]),
             "obligated_cas_provided": "cas" in columns,
         }
         for item in sorted(unique.values(), key=lambda row: row["code"])
-    ]
-    calculated_accounts = rollup_budget_by_hierarchy(candidate_accounts)
-    included_accounts = [
-        item for item in calculated_accounts if int(item.get("budget", 0) or 0) > 0
-    ]
-    if not included_accounts:
-        raise AppError("La planilla no contiene presupuesto vigente mayor a cero después del cálculo jerárquico.")
+    ])
+    included_accounts = candidate_accounts
 
-    calculated_by_code = {item["code"]: item for item in calculated_accounts}
     included_codes = {item["code"] for item in included_accounts}
     for item in raw_rows:
-        calculated = calculated_by_code.get(item.get("code"))
-        if not calculated:
-            if item.get("code") and item.get("name"):
-                item["reason"] = "Sin presupuesto vigente"
-            continue
-        item["budget_original"] = int(item.get("budget", 0) or 0)
-        item["budget"] = int(calculated.get("budget", 0) or 0)
-        item["included"] = item["code"] in included_codes
-        item["calculated_from_children"] = bool(
-            calculated.get("budget_calculated_from_children")
-        )
-        if item["included"] and item["calculated_from_children"]:
-            item["reason"] = "Subtotal calculado por jerarquía"
-        elif item["included"]:
-            item["reason"] = "Monto de cuenta detalle"
-        else:
-            item["reason"] = "Sin presupuesto vigente"
+        if item.get("code") in included_codes:
+            item["included"] = True
+            item["reason"] = "Cuenta incluida en la actualización"
+        elif item.get("code") and item.get("name"):
+            item["reason"] = "Cuenta no incluida"
+
 
     return {
         "filename": Path(filename).name[:255],
@@ -251,8 +219,8 @@ def parse_budget_file(filename: str, content: bytes) -> dict:
         "valid_rows": len(unique),
         "included_rows": len(included_accounts),
         "excluded_rows": max(0, len(raw_rows) - len(included_accounts)),
-        # First roll each hierarchy level upward; then the general total is the
-        # sum of structural first-order accounts only.
+        # Preliminary total for the uploaded rows. save_preview() replaces this
+        # with the total of the resulting snapshot after merge-by-code.
         "total_budget": first_order_budget_total(included_accounts),
         "first_order_accounts": sum(
             1 for a in included_accounts if is_first_order_account(a["code"])
@@ -270,6 +238,51 @@ def parse_budget_file(filename: str, content: bytes) -> dict:
 
 def save_preview(db: Session, *, user_id: str, area: str, year: int, parsed: dict) -> tuple[str, dict]:
     db.execute(delete(ImportPreviewCache).where(ImportPreviewCache.expires_at <= utcnow()))
+
+    snapshot = build_replacement_snapshot(
+        db,
+        area_slug=area,
+        year=year,
+        uploaded_accounts=parsed["accounts"],
+    )
+    status_by_code = snapshot.get("uploaded_status", {})
+    sample = []
+    for row in parsed["sample"]:
+        item = dict(row)
+        status = status_by_code.get(item.get("code"))
+        if status == "new":
+            item["reason"] = "Nueva cuenta: se incorporará al presupuesto vigente"
+        elif status == "modified":
+            item["reason"] = "Cuenta existente: el nuevo valor reemplazará al anterior"
+        elif status == "unchanged":
+            item["reason"] = "Cuenta existente sin cambios"
+        sample.append(item)
+
+    payload = dict(parsed)
+    payload.update(
+        {
+            "accounts": snapshot["accounts"],
+            "total_budget": snapshot["total_budget"],
+            "previous_total_budget": snapshot["previous_total_budget"],
+            "base_version_id": snapshot["base_version_id"],
+            "base_version_number": snapshot["base_version_number"],
+            "new_accounts": snapshot["new_accounts"],
+            "modified_accounts": snapshot["modified_accounts"],
+            "unchanged_uploaded_accounts": snapshot["unchanged_uploaded_accounts"],
+            "retained_accounts": snapshot["retained_accounts"],
+            "first_order_accounts": sum(
+                1 for account in snapshot["accounts"] if is_first_order_account(account["code"])
+            ),
+            "total_new_requirements": hierarchy_total(
+                snapshot["accounts"], "base_new_requirements"
+            ),
+            "total_obligated_cas": hierarchy_total(
+                snapshot["accounts"], "obligated_cas"
+            ),
+            "sample": sample,
+        }
+    )
+
     raw_token = random_token(32)
     cache = ImportPreviewCache(
         token_hash=token_digest(raw_token),
@@ -278,14 +291,16 @@ def save_preview(db: Session, *, user_id: str, area: str, year: int, parsed: dic
         year=year,
         filename=parsed["filename"],
         checksum=parsed["checksum"],
-        payload=parsed,
+        payload=payload,
         expires_at=utcnow() + timedelta(minutes=15),
     )
     db.add(cache)
     db.flush()
-    response = {key: parsed[key] for key in (
+    response = {key: payload[key] for key in (
         "filename", "rows_read", "valid_rows", "included_rows", "excluded_rows",
-        "total_budget", "first_order_accounts", "total_new_requirements", "total_obligated_cas", "sample"
+        "total_budget", "previous_total_budget", "first_order_accounts",
+        "total_new_requirements", "total_obligated_cas", "sample",
+        "new_accounts", "modified_accounts", "unchanged_uploaded_accounts", "retained_accounts",
     )}
     response.update({"token": raw_token, "area": area, "year": year})
     return raw_token, response
@@ -298,6 +313,19 @@ def apply_preview(db: Session, *, token: str, user_id: str, area: str, year: int
     if cache.user_id != user_id or cache.area_slug != area or cache.year != year:
         raise AppError("La vista previa no corresponde al usuario, área o año seleccionados.", 403, "preview_mismatch")
     parsed = cache.payload
+
+    expected_base = parsed.get("base_version_id")
+    try:
+        current = active_budget_version(db, area, year)
+        current_id = current.id
+    except NotFoundError:
+        current_id = None
+    if current_id != expected_base:
+        raise ConflictError(
+            "El presupuesto vigente cambió después de generar la vista previa. "
+            "Vuelva a cargar la planilla para evitar sobrescribir cambios de otro usuario."
+        )
+
     version = create_budget_version(
         db,
         area_slug=area,
@@ -310,3 +338,4 @@ def apply_preview(db: Session, *, token: str, user_id: str, area: str, year: int
     db.delete(cache)
     db.flush()
     return version
+

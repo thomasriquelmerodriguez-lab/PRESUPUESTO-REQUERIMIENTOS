@@ -5,16 +5,18 @@ import{$,money,escapeHtml,announce,showLoading,confirmAction}from'../ui.js';
 function previewHtml(data){
   const stats=[
     ['Filas leídas',data.rows_read],
-    ['Cuentas válidas',data.valid_rows],
-    ['Incluidas',data.included_rows],
-    ['Descartadas',data.excluded_rows],
-    ['Presupuesto (solo 1.er orden)',money(data.total_budget)],
+    ['Cuentas en la planilla',data.valid_rows],
+    ['Cuentas modificadas',data.modified_accounts??0],
+    ['Cuentas nuevas',data.new_accounts??0],
+    ['Cuentas anteriores sin tocar',data.retained_accounts??0],
+    ['Presupuesto anterior',money(data.previous_total_budget??0)],
+    ['Nuevo presupuesto vigente',money(data.total_budget)],
     ['Cuentas de 1.er orden',data.first_order_accounts??0],
-    ['Pre obligado planilla (referencia)',money(data.total_new_requirements)],
     ['Obligado CAS',money(data.total_obligated_cas)],
   ];
-  const rows=data.sample.slice(0,30).map(row=>{const changed=row.calculated_from_children&&Number(row.budget_original)!==Number(row.budget);return`<article class="data-card"><div><h3>${escapeHtml(row.code||'Sin cuenta')}</h3><div class="meta">${escapeHtml(row.name||'Sin denominación')}</div></div><div class="data-fields"><div class="data-field"><span>${row.calculated_from_children?'Presupuesto calculado':'Presupuesto'}</span><strong>${money(row.budget)}</strong>${changed?`<small>Cargado en planilla: ${money(row.budget_original)}</small>`:''}</div><div class="data-field"><span>Orden jerárquico</span><strong>${row.hierarchy_order?`Orden ${row.hierarchy_order}`:'—'}</strong></div><div class="data-field"><span>Pre obligado planilla (referencia)</span><strong>${money(row.base_new_requirements)}</strong></div><div class="data-field"><span>Obligado CAS</span><strong>${money(row.obligated_cas)}</strong></div></div><span class="status ${row.included?'ok':'warn'}">${escapeHtml(row.reason)}</span></article>`}).join('');
-  return `<div class="preview-grid">${stats.map(([label,value])=>`<div class="preview-stat"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join('')}</div><div class="button-row"><button id="cancelImport" class="button ghost" type="button">Cancelar</button><button id="applyImport" class="button primary" type="button">Aplicar presupuesto</button></div><div class="data-list">${rows}</div>`;
+  const rows=data.sample.slice(0,30).map(row=>`<article class="data-card"><div><h3>${escapeHtml(row.code||'Sin cuenta')}</h3><div class="meta">${escapeHtml(row.name||'Sin denominación')}</div></div><div class="data-fields"><div class="data-field"><span>Nuevo valor de la cuenta</span><strong>${money(row.budget)}</strong></div><div class="data-field"><span>Orden jerárquico</span><strong>${row.hierarchy_order?`Orden ${row.hierarchy_order}`:'—'}</strong></div><div class="data-field"><span>Pre obligado planilla (referencia)</span><strong>${money(row.base_new_requirements)}</strong></div><div class="data-field"><span>Obligado CAS</span><strong>${money(row.obligated_cas)}</strong></div></div><span class="status ${row.included?'ok':'warn'}">${escapeHtml(row.reason)}</span></article>`).join('');
+  const replacementNote=`<div class="callout"><strong>Modo actualización por reemplazo:</strong> los montos de las cuentas incluidas en la planilla reemplazan sus valores anteriores; nunca se suman al presupuesto previo. Las cuentas nuevas se incorporan y las cuentas no incluidas se conservan.</div>`;
+  return `${replacementNote}<div class="preview-grid">${stats.map(([label,value])=>`<div class="preview-stat"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join('')}</div><div class="button-row"><button id="cancelImport" class="button ghost" type="button">Cancelar</button><button id="applyImport" class="button primary" type="button">Aplicar como nuevo presupuesto vigente</button></div><div class="data-list">${rows}</div>`;
 }
 
 function renderPeriods(periods){
@@ -71,7 +73,12 @@ export async function loadVersions(){
   showLoading(container);
   try{
     const versions=await api(`/budgets/${state.area}/versions`);
-    container.innerHTML=versions.length?versions.map(version=>`<article class="data-card"><div><h3>Presupuesto ${version.year} · versión ${version.version_number}</h3><div class="meta">${escapeHtml(version.source_name)} · ${new Date(version.created_at).toLocaleString('es-CL')}</div></div><div class="data-fields"><div class="data-field"><span>Total</span><strong>${money(version.total_budget)}</strong></div><div class="data-field"><span>Estado</span><strong>${version.active?'Activo':'Histórico'}</strong></div><div class="data-field"><span>Origen</span><strong>${version.is_seed?'Base incorporada':'Carga de usuario'}</strong></div></div>${hasPermission('budgets.import')&&version.is_seed&&!version.active?'<div class="data-actions"><button class="button secondary" data-restore-year="'+version.year+'" type="button">Restaurar base</button></div>':''}</article>`).join(''):'<div class="progress-message">No hay presupuestos cargados para esta área.</div>';
+    container.innerHTML=versions.length?versions.map(version=>{
+      const actions=[];
+      if(hasPermission('budgets.import')&&version.is_seed&&!version.active)actions.push(`<button class="button secondary" data-restore-year="${version.year}" type="button">Restaurar base</button>`);
+      if(hasPermission('budgets.import')&&!version.is_seed)actions.push(`<button class="button danger" data-delete-version="${escapeHtml(version.id)}" data-delete-year="${version.year}" data-delete-active="${version.active?'1':'0'}" type="button">Eliminar presupuesto</button>`);
+      return `<article class="data-card"><div><h3>Presupuesto ${version.year} · versión ${version.version_number}</h3><div class="meta">${escapeHtml(version.source_name)} · ${new Date(version.created_at).toLocaleString('es-CL')}</div></div><div class="data-fields"><div class="data-field"><span>Total</span><strong>${money(version.total_budget)}</strong></div><div class="data-field"><span>Estado</span><strong>${version.active?'Activo':'Histórico'}</strong></div><div class="data-field"><span>Origen</span><strong>${version.is_seed?'Base incorporada':'Carga de usuario'}</strong></div></div>${actions.length?`<div class="data-actions">${actions.join('')}</div>`:''}</article>`;
+    }).join(''):'<div class="progress-message">No hay presupuestos cargados para esta área.</div>';
   }catch(error){container.innerHTML=`<div class="callout error">${escapeHtml(error.message)}</div>`}
 }
 
@@ -101,7 +108,7 @@ async function preview(event){
 async function apply(){
   if(!hasPermission('budgets.import')||!state.importToken)return;
   const year=Number($('#importYear').value);
-  if(!await confirmAction(`¿Aplicar esta planilla como presupuesto vigente de ${state.area} para ${year}?`))return;
+  if(!await confirmAction(`¿Actualizar el presupuesto ${year}? Las cuentas incluidas reemplazarán sus valores anteriores y no se sumarán al presupuesto previo.`))return;
   try{
     await api('/budgets/import/apply',{method:'POST',body:{token:state.importToken,area:state.area,year}});
     announce(`Presupuesto ${year} aplicado correctamente.`);
@@ -140,15 +147,32 @@ async function importBackup(event){
   }catch(error){announce(error.message)}
 }
 
-async function restore(event){
+async function versionAction(event){
   if(!hasPermission('budgets.import'))return;
-  const button=event.target.closest('[data-restore-year]');
-  if(!button)return;
-  const year=Number(button.dataset.restoreYear);
-  if(!await confirmAction(`¿Restaurar la base incorporada del año ${year}?`))return;
+  const restoreButton=event.target.closest('[data-restore-year]');
+  if(restoreButton){
+    const year=Number(restoreButton.dataset.restoreYear);
+    if(!await confirmAction(`¿Restaurar la base incorporada del año ${year}?`))return;
+    try{
+      await api(`/budgets/${state.area}/${year}/restore-seed`,{method:'POST'});
+      announce('Presupuesto base restaurado.');
+      document.dispatchEvent(new CustomEvent('budget-years-changed'));
+      await loadVersions();
+    }catch(error){announce(error.message)}
+    return;
+  }
+  const deleteButton=event.target.closest('[data-delete-version]');
+  if(!deleteButton)return;
+  const versionId=deleteButton.dataset.deleteVersion;
+  const year=Number(deleteButton.dataset.deleteYear);
+  const active=deleteButton.dataset.deleteActive==='1';
+  const message=active
+    ? `¿Eliminar el presupuesto vigente ${year}? Si existe una versión anterior, se restaurará automáticamente.`
+    : `¿Eliminar esta versión histórica del presupuesto ${year}?`;
+  if(!await confirmAction(message))return;
   try{
-    await api(`/budgets/${state.area}/${year}/restore-seed`,{method:'POST'});
-    announce('Presupuesto base restaurado.');
+    const result=await api(`/budgets/${state.area}/versions/${encodeURIComponent(versionId)}`,{method:'DELETE'});
+    announce(result.message||'Presupuesto eliminado.');
     document.dispatchEvent(new CustomEvent('budget-years-changed'));
     await loadVersions();
   }catch(error){announce(error.message)}
@@ -169,5 +193,5 @@ export function initImportPage(){
   $('#downloadTemplate').addEventListener('click',template);
   $('#backupExport').addEventListener('click',()=>{if(hasPermission('backups.export'))downloadUrl(`/backup?area=${encodeURIComponent(state.area)}`)});
   $('#backupImportForm').addEventListener('submit',importBackup);
-  $('#versionsList').addEventListener('click',restore);
+  $('#versionsList').addEventListener('click',versionAction);
 }

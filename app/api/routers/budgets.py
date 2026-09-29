@@ -24,6 +24,7 @@ from app.services.budgets import (
     catalog,
     create_budget_period,
     dashboard_metrics,
+    delete_budget_version,
     list_budget_periods,
     list_versions,
     restore_seed_version,
@@ -193,6 +194,39 @@ def versions(area: str, db: DbDep, user: CurrentUser):
     require_area(user, area)
     require_permission(user, "budgets.view")
     return list_versions(db, area)
+
+
+@router.delete("/{area}/versions/{version_id}")
+def delete_version(
+    area: str,
+    version_id: str,
+    request: Request,
+    db: DbDep,
+    user: CsrfUser,
+):
+    require_area(user, area)
+    require_permission(user, "budgets.import")
+    result = delete_budget_version(db, area, version_id)
+    audit_action(
+        db,
+        request,
+        user=user,
+        action="budget.version.delete",
+        entity_type="budget_version",
+        entity_id=version_id,
+        area=area,
+        details=result,
+        event_type="budget.changed",
+    )
+    db.commit()
+    if result["restored_version"] is not None:
+        message = (
+            f"Presupuesto eliminado. Se restauró automáticamente la versión "
+            f"{result['restored_version']} del año {result['year']}."
+        )
+    else:
+        message = "Presupuesto eliminado correctamente."
+    return {"message": message, **result}
 
 
 @router.post("/{area}/{year}/restore-seed")

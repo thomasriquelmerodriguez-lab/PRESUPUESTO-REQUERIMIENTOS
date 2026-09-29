@@ -74,9 +74,14 @@ class ImportPreview(ApiModel):
     included_rows: int
     excluded_rows: int
     total_budget: int
+    previous_total_budget: int = 0
     first_order_accounts: int = 0
     total_new_requirements: int
     total_obligated_cas: int
+    new_accounts: int = 0
+    modified_accounts: int = 0
+    unchanged_uploaded_accounts: int = 0
+    retained_accounts: int = 0
     sample: list[ImportPreviewRow]
 
 
