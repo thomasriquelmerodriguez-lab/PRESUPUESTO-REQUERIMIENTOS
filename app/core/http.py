@@ -52,7 +52,11 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             csp += "; upgrade-insecure-requests"
         response.headers["Content-Security-Policy"] = csp
         if request.url.path.startswith("/static/"):
-            response.headers.setdefault("Cache-Control", "public, max-age=3600")
+            # During managed deployments (Render) every release must serve its
+            # current JS/CSS immediately. Avoid stale modules from a previous
+            # deploy hiding new controls or running old import logic.
+            response.headers["Cache-Control"] = "no-store, max-age=0"
+            response.headers["Pragma"] = "no-cache"
         else:
             response.headers["Cache-Control"] = "no-store"
             response.headers["Pragma"] = "no-cache"

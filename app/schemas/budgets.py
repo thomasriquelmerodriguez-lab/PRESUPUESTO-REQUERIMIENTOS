@@ -82,6 +82,7 @@ class ImportPreview(ApiModel):
     modified_accounts: int = 0
     unchanged_uploaded_accounts: int = 0
     retained_accounts: int = 0
+    removed_accounts: int = 0
     sample: list[ImportPreviewRow]
 
 

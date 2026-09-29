@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.core.exceptions import AppError, ConflictError, NotFoundError
 from app.db.models import Area, BudgetAccount, BudgetPeriod, BudgetVersion, Requirement
-from app.services.accounts import apply_account_hierarchy, first_order_budget_total, matrix_code
+from app.services.accounts import apply_account_hierarchy, first_order_budget_total, is_budget_scope_account, matrix_code
 
 
 def get_area(db: Session, slug: str) -> Area:
@@ -392,15 +392,16 @@ def build_replacement_snapshot(
     year: int,
     uploaded_accounts: list[dict],
 ) -> dict:
-    """Build the next active budget snapshot using replace-by-code semantics.
+    """Build the next active budget as a COMPLETE replacement snapshot.
 
-    Existing accounts are retained when they are absent from the uploaded file.
-    Every uploaded accounting code REPLACES the previous value for that code;
-    new codes are inserted. No budget amount is ever added to the previous value.
+    The uploaded spreadsheet becomes the new budget for the selected area/year.
+    Budget amounts from older versions are never carried forward and are never
+    added to the uploaded values. Accounts absent from the new spreadsheet are
+    removed from the active snapshot.
 
-    This supports both full current-budget spreadsheets and smaller modification
-    spreadsheets. The overall budget is always recalculated from first-order
-    accounts in the resulting snapshot.
+    For continuity only, CAS / legacy pre-obligado values may be preserved for
+    the SAME accounting code when the uploaded spreadsheet omits those columns.
+    This does not affect or accumulate the budget amount.
     """
     area = get_area(db, area_slug)
     previous = db.execute(
@@ -423,18 +424,21 @@ def build_replacement_snapshot(
                 "budget": int(row.budget),
                 "base_new_requirements": int(row.base_new_requirements),
                 "obligated_cas": int(row.obligated_cas),
-                "obligated_cas_provided": True,
             }
 
-    merged = dict(existing_accounts)
+    next_accounts: list[dict] = []
     new_count = 0
     modified_count = 0
     unchanged_uploaded_count = 0
     uploaded_status: dict[str, str] = {}
+    uploaded_codes: set[str] = set()
 
     for uploaded in uploaded_accounts:
         code = str(uploaded["code"])
-        old = merged.get(code)
+        if not is_budget_scope_account(code):
+            continue
+        uploaded_codes.add(code)
+        old = existing_accounts.get(code)
         cas_provided = bool(uploaded.get("obligated_cas_provided", False))
         new_provided = bool(uploaded.get("base_new_requirements_provided", False))
         replacement = {
@@ -451,10 +455,10 @@ def build_replacement_snapshot(
                 if cas_provided
                 else int((old or {}).get("obligated_cas", 0) or 0)
             ),
-            # Values are now explicit in the merged snapshot.
             "obligated_cas_provided": True,
             "base_new_requirements_provided": True,
         }
+
         if old is None:
             new_count += 1
             uploaded_status[code] = "new"
@@ -477,20 +481,20 @@ def build_replacement_snapshot(
             else:
                 modified_count += 1
                 uploaded_status[code] = "modified"
-        merged[code] = replacement
+        next_accounts.append(replacement)
 
-    accounts = apply_account_hierarchy(
-        [merged[code] for code in sorted(merged)]
-    )
+    accounts = apply_account_hierarchy(sorted(next_accounts, key=lambda item: item["code"]))
     total_budget = first_order_budget_total(accounts)
     if total_budget <= 0:
         raise AppError(
-            "El presupuesto resultante no contiene cuentas de primer orden con monto vigente. "
-            "Incluya al menos una cuenta de primer orden, por ejemplo 215-22-00-000-000-000.",
+            "El nuevo presupuesto no contiene cuentas de primer orden con monto vigente "
+            "desde 215-21 en adelante. Incluya al menos una cuenta como "
+            "215-21-00-000-000-000 o 215-22-00-000-000-000.",
             422,
             "missing_first_order_accounts",
         )
 
+    removed_accounts = len(set(existing_accounts) - uploaded_codes)
     return {
         "accounts": accounts,
         "total_budget": total_budget,
@@ -500,10 +504,10 @@ def build_replacement_snapshot(
         "new_accounts": new_count,
         "modified_accounts": modified_count,
         "unchanged_uploaded_accounts": unchanged_uploaded_count,
-        "retained_accounts": max(0, len(existing_accounts) - sum(1 for item in uploaded_accounts if str(item["code"]) in existing_accounts)),
+        "retained_accounts": 0,
+        "removed_accounts": removed_accounts,
         "uploaded_status": uploaded_status,
     }
-
 
 def delete_budget_version(db: Session, area_slug: str, version_id: str) -> dict:
     """Delete any budget version and roll back if it was active.
@@ -578,7 +582,9 @@ def create_budget_version(
     # hierarchy metadata here (parent/level/matrix); we do not recalculate parent
     # amounts from children because the spreadsheet already represents the current
     # budget values for every level.
-    accounts = apply_account_hierarchy(accounts)
+    accounts = apply_account_hierarchy(
+        [item for item in accounts if is_budget_scope_account(str(item.get("code") or ""))]
+    )
 
     area = get_area(db, area_slug)
     db.execute(

@@ -120,6 +120,32 @@ def is_first_order_account(code: str) -> bool:
     return all(not _is_nonzero(segment) for segment in parts[start:])
 
 
+def is_budget_scope_account(code: str) -> bool:
+    """Return True for expenditure accounts from 215-21 onwards.
+
+    The municipal budget workbook can contain heading rows or accounting classes
+    that are not part of the expenditure budget used by this application.  The
+    requested scope starts at item 21 of class 215 and continues with 22, 23,
+    24, 25, 26, 29, 31, 33, etc.
+
+    Full codes (215-21-...) are preferred.  Short legacy codes (21-..., 22-...)
+    are also accepted for compatibility with older spreadsheets.  Other full
+    accounting classes such as 115 are excluded.
+    """
+    parts = code_parts(code)
+    if not parts:
+        return False
+    try:
+        if parts[0] == "215":
+            return len(parts) >= 2 and int(parts[1]) >= 21
+        # Compatibility with sheets that omit the leading 215 class.
+        if len(parts) >= 2 and len(parts[0]) <= 2:
+            return int(parts[0]) >= 21
+    except (TypeError, ValueError):
+        return False
+    return False
+
+
 def first_order_budget_total(accounts: Iterable[dict], value_key: str = "budget") -> int:
     """Sum only structural first-order accounts.
 
@@ -129,7 +155,8 @@ def first_order_budget_total(accounts: Iterable[dict], value_key: str = "budget"
     return sum(
         max(0, int(item.get(value_key, 0) or 0))
         for item in accounts
-        if is_first_order_account(str(item.get("code") or ""))
+        if is_budget_scope_account(str(item.get("code") or ""))
+        and is_first_order_account(str(item.get("code") or ""))
     )
 
 
@@ -145,7 +172,10 @@ def first_order_group(code: str) -> str:
 
 def has_complete_first_order_coverage(accounts: Iterable[dict]) -> bool:
     """Whether every expenditure item represented has its order-1 summary row."""
-    rows = list(accounts)
+    rows = [
+        item for item in accounts
+        if is_budget_scope_account(str(item.get("code") or ""))
+    ]
     groups = {first_order_group(str(item.get("code") or "")) for item in rows}
     groups.discard("")
     first_groups = {

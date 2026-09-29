@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="light">
   <title>{{ app_name }}</title>
-  <link rel="stylesheet" href="/static/css/app.css">
-  <script type="module" src="/static/js/app.js"></script>
+  <link rel="stylesheet" href="/static/css/app.css?v=20260929-2">
+  <script type="module" src="/static/js/r20260929/app.js"></script>
 </head>
 <body>
   <div id="liveRegion" class="sr-only" aria-live="polite"></div>
@@ -142,7 +142,7 @@
             <div id="budgetYearsList" class="data-list"></div>
           </article>
           <article id="budgetImportPanel" class="panel">
-            <div class="panel-heading"><div><h2>Cargar o actualizar presupuesto</h2><p>Seleccione un año previamente creado. El sistema reconoce la jerarquía de cuentas y evita sumar dos veces subtotales y cuentas de detalle.</p></div><div class="button-row"><button id="downloadTemplate" class="button secondary" type="button">Plantilla CSV</button><button id="backupExport" class="button secondary" type="button">Descargar respaldo</button></div></div>
+            <div class="panel-heading"><div><h2>Cargar o actualizar presupuesto</h2><p>Seleccione un año previamente creado. Se consideran únicamente las cuentas desde 215-21 en adelante; el total general suma solo las cuentas de primer orden y evita duplicar subtotales y cuentas de detalle.</p></div><div class="button-row"><button id="downloadTemplate" class="button secondary" type="button">Plantilla CSV</button><button id="backupExport" class="button secondary" type="button">Descargar respaldo</button></div></div>
             <form id="budgetImportForm" class="upload-form">
               <label>Año a actualizar<select id="importYear" required></select></label>
               <label>Planilla Excel o CSV<input id="budgetFile" type="file" accept=".xlsx,.xls,.csv,.txt" required></label>

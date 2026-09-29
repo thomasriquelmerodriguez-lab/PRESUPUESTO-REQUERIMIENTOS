@@ -22,6 +22,7 @@ from app.services.accounts import (
     first_order_budget_total,
     hierarchy_order,
     hierarchy_total,
+    is_budget_scope_account,
     is_first_order_account,
     normalize_code,
 )
@@ -164,7 +165,8 @@ def parse_budget_file(filename: str, content: bytes) -> dict:
         if not code and not name and not budget and not new_req and not cas:
             continue
 
-        valid = bool(code and name)
+        valid_structure = bool(code and name)
+        in_budget_scope = bool(valid_structure and is_budget_scope_account(code))
         item = {
             "code": code,
             "name": name,
@@ -176,14 +178,24 @@ def parse_budget_file(filename: str, content: bytes) -> dict:
             "obligated_cas": cas,
             "included": False,
             "calculated_from_children": False,
-            "reason": "Pendiente de cálculo jerárquico" if valid else "Fila incompleta",
+            "reason": (
+                "Pendiente de cálculo jerárquico"
+                if in_budget_scope
+                else (
+                    "Fuera del rango presupuestario: se consideran cuentas desde 215-21 en adelante"
+                    if valid_structure
+                    else "Fila incompleta"
+                )
+            ),
         }
         raw_rows.append(item)
-        if valid:
+        if in_budget_scope:
             unique[code] = item
 
     if not unique:
-        raise AppError("La planilla no contiene cuentas presupuestarias válidas.")
+        raise AppError(
+            "La planilla no contiene cuentas presupuestarias válidas desde 215-21 en adelante."
+        )
 
     # Uploaded values are authoritative for their accounting code. We do not
     # add them to the previous budget and we do not overwrite parent amounts by
@@ -208,7 +220,7 @@ def parse_budget_file(filename: str, content: bytes) -> dict:
         if item.get("code") in included_codes:
             item["included"] = True
             item["reason"] = "Cuenta incluida en la actualización"
-        elif item.get("code") and item.get("name"):
+        elif item.get("code") and item.get("name") and is_budget_scope_account(str(item.get("code"))):
             item["reason"] = "Cuenta no incluida"
 
 
@@ -270,6 +282,7 @@ def save_preview(db: Session, *, user_id: str, area: str, year: int, parsed: dic
             "modified_accounts": snapshot["modified_accounts"],
             "unchanged_uploaded_accounts": snapshot["unchanged_uploaded_accounts"],
             "retained_accounts": snapshot["retained_accounts"],
+            "removed_accounts": snapshot.get("removed_accounts", 0),
             "first_order_accounts": sum(
                 1 for account in snapshot["accounts"] if is_first_order_account(account["code"])
             ),
@@ -300,7 +313,7 @@ def save_preview(db: Session, *, user_id: str, area: str, year: int, parsed: dic
         "filename", "rows_read", "valid_rows", "included_rows", "excluded_rows",
         "total_budget", "previous_total_budget", "first_order_accounts",
         "total_new_requirements", "total_obligated_cas", "sample",
-        "new_accounts", "modified_accounts", "unchanged_uploaded_accounts", "retained_accounts",
+        "new_accounts", "modified_accounts", "unchanged_uploaded_accounts", "retained_accounts", "removed_accounts",
     )}
     response.update({"token": raw_token, "area": area, "year": year})
     return raw_token, response
