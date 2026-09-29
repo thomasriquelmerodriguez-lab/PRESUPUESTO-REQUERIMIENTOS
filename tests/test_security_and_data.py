@@ -292,3 +292,42 @@ def test_budget_upload_requires_first_order_summary(client):
     )
     assert preview.status_code == 422
     assert "primer orden" in preview.text.lower()
+
+
+def test_budget_upload_recalculates_parent_levels(client):
+    csrf = login(client)
+    headers = {"origin": "http://testserver", "x-csrf-token": csrf}
+    client.post("/api/budgets/educacion/years", json={"year": 2030}, headers=headers)
+    csv_data = (
+        "CUENTA;DENOMINACIÓN;PRESUPUESTO VIGENTE;OBLIGADO CAS\n"
+        "215-22-00-000-000-000;BIENES Y SERVICIOS;999999999;0\n"
+        "215-22-01-000-000-000;ALIMENTOS;999999999;0\n"
+        "215-22-01-001-000-000;PERSONAS;50000000;0\n"
+        "215-22-01-002-000-000;ANIMALES;4000000;0\n"
+        "215-22-02-000-000-000;TEXTILES;46000000;0\n"
+    ).encode("utf-8")
+    preview = client.post(
+        "/api/budgets/import/preview",
+        data={"area": "educacion", "year": "2030"},
+        files={"file": ("presupuesto_2030.csv", csv_data, "text/csv")},
+        headers=headers,
+    )
+    assert preview.status_code == 200, preview.text
+    body = preview.json()
+    assert body["total_budget"] == 100_000_000
+    row_01 = next(row for row in body["sample"] if row["code"] == "215-22-01-000-000-000")
+    assert row_01["budget"] == 54_000_000
+    assert row_01["budget_original"] == 999_999_999
+    assert row_01["calculated_from_children"] is True
+
+    applied = client.post(
+        "/api/budgets/import/apply",
+        json={"token": body["token"], "area": "educacion", "year": 2030},
+        headers=headers,
+    )
+    assert applied.status_code == 200, applied.text
+    catalog = client.get("/api/budgets/educacion/2030/catalog").json()
+    by_code = {row["code"]: row for row in catalog["accounts"]}
+    assert catalog["total_budget"] == 100_000_000
+    assert by_code["215-22-01-000-000-000"]["budget"] == 54_000_000
+    assert by_code["215-22-00-000-000-000"]["budget"] == 100_000_000

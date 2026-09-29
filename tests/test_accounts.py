@@ -99,3 +99,23 @@ def test_first_order_budget_total_does_not_promote_missing_parent():
         {"code": "215-22-01-002-000-000", "budget": 350},
     ]
     assert first_order_budget_total(rows) == 0
+
+
+def test_budget_rolls_up_each_hierarchy_level():
+    from app.services.accounts import rollup_budget_by_hierarchy
+
+    rows = [
+        {"code": "215-22-00-000-000-000", "budget": 999_999_999},
+        {"code": "215-22-01-000-000-000", "budget": 999_999_999},
+        {"code": "215-22-01-001-000-000", "budget": 50_000_000},
+        {"code": "215-22-01-002-000-000", "budget": 4_000_000},
+        {"code": "215-22-02-000-000-000", "budget": 46_000_000},
+    ]
+    rolled = rollup_budget_by_hierarchy(rows)
+    by_code = {row["code"]: row for row in rolled}
+
+    assert by_code["215-22-01-000-000-000"]["budget"] == 54_000_000
+    assert by_code["215-22-00-000-000-000"]["budget"] == 100_000_000
+    assert by_code["215-22-01-001-000-000"]["budget"] == 50_000_000
+    assert by_code["215-22-01-002-000-000"]["budget"] == 4_000_000
+    assert by_code["215-22-02-000-000-000"]["budget"] == 46_000_000
