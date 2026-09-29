@@ -119,3 +119,21 @@ def test_budget_rolls_up_each_hierarchy_level():
     assert by_code["215-22-01-001-000-000"]["budget"] == 50_000_000
     assert by_code["215-22-01-002-000-000"]["budget"] == 4_000_000
     assert by_code["215-22-02-000-000-000"]["budget"] == 46_000_000
+
+
+def test_budget_scope_starts_at_215_21():
+    from app.services.accounts import first_order_budget_total, is_budget_scope_account
+
+    assert is_budget_scope_account("215-20-00-000-000-000") is False
+    assert is_budget_scope_account("215-21-00-000-000-000") is True
+    assert is_budget_scope_account("215-22-00-000-000-000") is True
+    assert is_budget_scope_account("115-03-00-000-000-000") is False
+    assert is_budget_scope_account("21-00-000-000-000") is True
+
+    rows = [
+        {"code": "215-20-00-000-000-000", "budget": 9_000},
+        {"code": "215-21-00-000-000-000", "budget": 1_000},
+        {"code": "215-22-00-000-000-000", "budget": 2_000},
+        {"code": "115-03-00-000-000-000", "budget": 8_000},
+    ]
+    assert first_order_budget_total(rows) == 3_000

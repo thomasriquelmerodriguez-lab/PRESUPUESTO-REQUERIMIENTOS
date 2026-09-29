@@ -358,8 +358,8 @@ def test_budget_update_replaces_values_instead_of_adding_previous_budget(client)
     assert first_apply.status_code == 200, first_apply.text
     assert client.get("/api/budgets/educacion/2031/catalog").json()["total_budget"] == 100
 
-    # The update only changes the first-order account and adds one new account.
-    # It must replace 100 with 120, never calculate 100 + 120.
+    # The new spreadsheet is the complete active snapshot. It must replace
+    # 100 with 120, never calculate 100 + 120, and remove rows not present.
     second_csv = (
         "CUENTA;DENOMINACIÓN;PRESUPUESTO VIGENTE\n"
         "215-22-00-000-000-000;BIENES Y SERVICIOS;120\n"
@@ -377,6 +377,7 @@ def test_budget_update_replaces_values_instead_of_adding_previous_budget(client)
     assert body["total_budget"] == 120
     assert body["new_accounts"] == 1
     assert body["modified_accounts"] == 1
+    assert body["removed_accounts"] == 2
     second_apply = client.post(
         "/api/budgets/import/apply",
         json={"token": body["token"], "area": "educacion", "year": 2031},
@@ -387,8 +388,8 @@ def test_budget_update_replaces_values_instead_of_adding_previous_budget(client)
     assert catalog["total_budget"] == 120
     by_code = {row["code"]: row for row in catalog["accounts"]}
     assert by_code["215-22-00-000-000-000"]["budget"] == 120
-    assert by_code["215-22-01-000-000-000"]["budget"] == 60
-    assert by_code["215-22-02-000-000-000"]["budget"] == 40
+    assert "215-22-01-000-000-000" not in by_code
+    assert "215-22-02-000-000-000" not in by_code
     assert by_code["215-22-03-000-000-000"]["budget"] == 20
 
 
@@ -465,3 +466,44 @@ def test_seed_budget_version_can_be_deleted(client):
             select(BudgetVersion).where(BudgetVersion.id == version_id)
         ).scalar_one_or_none()
         assert remaining is None
+
+
+def test_budget_import_ignores_accounts_before_215_21(client):
+    csrf = login(client)
+    headers = {"origin": "http://testserver", "x-csrf-token": csrf}
+    client.post("/api/budgets/educacion/years", json={"year": 2036}, headers=headers)
+    csv_data = (
+        "CUENTA;DENOMINACIÓN;PRESUPUESTO VIGENTE;OBLIGADO CAS\n"
+        "215-20-00-000-000-000;CUENTA ANTERIOR;9000000;0\n"
+        "215-21-00-000-000-000;GASTOS EN PERSONAL;1000000;0\n"
+        "215-22-00-000-000-000;BIENES Y SERVICIOS;2000000;0\n"
+        "215-22-01-000-000-000;ALIMENTOS;500000;0\n"
+        "115-03-00-000-000-000;INGRESOS;8000000;0\n"
+    ).encode("utf-8")
+    preview = client.post(
+        "/api/budgets/import/preview",
+        data={"area": "educacion", "year": "2036"},
+        files={"file": ("presupuesto_2036.csv", csv_data, "text/csv")},
+        headers=headers,
+    )
+    assert preview.status_code == 200, preview.text
+    body = preview.json()
+    assert body["total_budget"] == 3_000_000
+    sample = {row["code"]: row for row in body["sample"]}
+    assert sample["215-20-00-000-000-000"]["included"] is False
+    assert "215-21" in sample["215-20-00-000-000-000"]["reason"]
+    assert sample["115-03-00-000-000-000"]["included"] is False
+
+    applied = client.post(
+        "/api/budgets/import/apply",
+        json={"token": body["token"], "area": "educacion", "year": 2036},
+        headers=headers,
+    )
+    assert applied.status_code == 200, applied.text
+    catalog = client.get("/api/budgets/educacion/2036/catalog").json()
+    codes = {row["code"] for row in catalog["accounts"]}
+    assert "215-20-00-000-000-000" not in codes
+    assert "115-03-00-000-000-000" not in codes
+    assert "215-21-00-000-000-000" in codes
+    assert "215-22-00-000-000-000" in codes
+    assert catalog["total_budget"] == 3_000_000
