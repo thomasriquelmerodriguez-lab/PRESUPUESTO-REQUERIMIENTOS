@@ -227,6 +227,57 @@ def apply_account_hierarchy(accounts: Iterable[dict]) -> list[dict]:
     return resolved
 
 
+def rollup_budget_by_hierarchy(accounts: Iterable[dict]) -> list[dict]:
+    """Recalculate parent budgets from their immediate child branches.
+
+    The uploaded spreadsheet may contain both summary rows and detail rows.
+    For every account that has children in the uploaded catalog, its effective
+    budget is the sum of the *calculated* budgets of those children. Leaf
+    accounts keep their uploaded amount. The calculation runs recursively from
+    the deepest level upwards, so each hierarchy level is internally consistent.
+
+    Example::
+
+        22-00-000-000-000         = 22-01... + 22-02...
+        22-01-000-000-000         = 22-01-001... + 22-01-002...
+        22-01-001-000-000         = uploaded leaf amount
+
+    This deliberately replaces a parent amount when children exist. It prevents
+    stale subtotal values from a modification spreadsheet from breaking the
+    hierarchical totals.
+    """
+    rows = apply_account_hierarchy(accounts)
+    by_code = {item["code"]: item for item in rows}
+    children: dict[str, list[str]] = {code: [] for code in by_code}
+    for item in rows:
+        parent = item.get("parent_code")
+        if parent in children:
+            children[parent].append(item["code"])
+
+    memo: dict[str, int] = {}
+
+    def calculated_budget(code: str) -> int:
+        if code in memo:
+            return memo[code]
+        item = by_code[code]
+        child_codes = children.get(code, [])
+        if child_codes:
+            value = sum(calculated_budget(child) for child in child_codes)
+        else:
+            value = max(0, int(item.get("budget", 0) or 0))
+        memo[code] = value
+        return value
+
+    result: list[dict] = []
+    for item in rows:
+        updated = dict(item)
+        updated["uploaded_budget"] = max(0, int(item.get("budget", 0) or 0))
+        updated["budget"] = calculated_budget(item["code"])
+        updated["budget_calculated_from_children"] = bool(children.get(item["code"]))
+        result.append(updated)
+    return result
+
+
 def hierarchy_total(accounts: Iterable[dict], value_key: str) -> int:
     """Return a non-duplicated total for a value repeated through a hierarchy.
 

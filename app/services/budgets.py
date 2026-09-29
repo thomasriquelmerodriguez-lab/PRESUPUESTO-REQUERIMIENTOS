@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.core.exceptions import ConflictError, NotFoundError
 from app.db.models import Area, BudgetAccount, BudgetPeriod, BudgetVersion, Requirement
-from app.services.accounts import apply_account_hierarchy, first_order_budget_total, matrix_code
+from app.services.accounts import first_order_budget_total, matrix_code, rollup_budget_by_hierarchy
 
 
 def get_area(db: Session, slug: str) -> Area:
@@ -398,7 +398,7 @@ def create_budget_version(
     # Normalize parent/level/matrix against the complete uploaded catalog before
     # totals are calculated. Parent summary rows therefore do not count again as
     # independent budget lines.
-    accounts = apply_account_hierarchy(accounts)
+    accounts = rollup_budget_by_hierarchy(accounts)
 
     area = get_area(db, area_slug)
     db.execute(

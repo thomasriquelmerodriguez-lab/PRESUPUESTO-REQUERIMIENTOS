@@ -54,6 +54,10 @@ class ImportPreviewRow(ApiModel):
     code: str
     name: str
     budget: int
+    budget_original: int = 0
+    hierarchy_order: int | None = None
+    first_order: bool = False
+    calculated_from_children: bool = False
     base_new_requirements: int
     obligated_cas: int
     included: bool
@@ -70,6 +74,7 @@ class ImportPreview(ApiModel):
     included_rows: int
     excluded_rows: int
     total_budget: int
+    first_order_accounts: int = 0
     total_new_requirements: int
     total_obligated_cas: int
     sample: list[ImportPreviewRow]

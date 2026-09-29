@@ -18,14 +18,13 @@ from app.core.exceptions import AppError, NotFoundError
 from app.core.security import ensure_aware, random_token, token_digest, utcnow
 from app.db.models import ImportPreviewCache
 from app.services.accounts import (
-    apply_account_hierarchy,
     first_order_budget_total,
     hierarchy_order,
     hierarchy_total,
     has_complete_first_order_coverage,
     is_first_order_account,
     normalize_code,
-    should_include_account,
+    rollup_budget_by_hierarchy,
 )
 from app.services.budgets import create_budget_version
 
@@ -144,53 +143,52 @@ def parse_budget_file(filename: str, content: bytes) -> dict:
     header_row, columns = _find_columns(rows)
     raw_rows: list[dict] = []
     unique: dict[str, dict] = {}
+
     for row in rows[header_row + 1 :]:
         code = normalize_code(row[columns["code"]] if columns["code"] < len(row) else "")
-        name = str(row[columns["name"]] if columns["name"] < len(row) and row[columns["name"]] is not None else "").strip()
+        name = str(
+            row[columns["name"]]
+            if columns["name"] < len(row) and row[columns["name"]] is not None
+            else ""
+        ).strip()
         budget = _parse_amount(row[columns["budget"]] if columns["budget"] < len(row) else 0)
-        new_req = _parse_amount(row[columns["new"]] if "new" in columns and columns["new"] < len(row) else 0)
-        cas = _parse_amount(row[columns["cas"]] if "cas" in columns and columns["cas"] < len(row) else 0)
+        new_req = _parse_amount(
+            row[columns["new"]]
+            if "new" in columns and columns["new"] < len(row)
+            else 0
+        )
+        cas = _parse_amount(
+            row[columns["cas"]]
+            if "cas" in columns and columns["cas"] < len(row)
+            else 0
+        )
         if not code and not name and not budget and not new_req and not cas:
             continue
+
         valid = bool(code and name)
-        included = valid and should_include_account(code, budget)
-        reason = "Se incluirá" if included else ("Sin presupuesto vigente" if valid else "Fila incompleta")
         item = {
             "code": code,
             "name": name,
             "budget": budget,
+            "budget_original": budget,
             "hierarchy_order": hierarchy_order(code) if code else None,
             "first_order": is_first_order_account(code) if code else False,
             "base_new_requirements": new_req,
             "obligated_cas": cas,
-            "included": included,
-            "reason": reason,
+            "included": False,
+            "calculated_from_children": False,
+            "reason": "Pendiente de cálculo jerárquico" if valid else "Fila incompleta",
         }
         raw_rows.append(item)
         if valid:
             unique[code] = item
-    included_accounts = []
-    for item in sorted(unique.values(), key=lambda row: row["code"]):
-        if not item["included"]:
-            continue
-        included_accounts.append(
-            {
-                "code": item["code"],
-                "name": item["name"],
-                "budget": item["budget"],
-                "base_new_requirements": item["base_new_requirements"],
-                "obligated_cas": item["obligated_cas"],
-                # If the spreadsheet omits OBLIGADO CAS, preserve the value from
-                # the current budget version for the same account when applying.
-                "obligated_cas_provided": "cas" in columns,
-            }
-        )
-    if not included_accounts:
-        raise AppError("La planilla no contiene cuentas con presupuesto vigente mayor a cero.")
 
-    # The total budget is defined only by structural first-order accounts.
-    # Validate against all valid rows (including zero-budget summaries) so a
-    # missing order-1 row cannot silently promote a lower-order subtotal.
+    if not unique:
+        raise AppError("La planilla no contiene cuentas presupuestarias válidas.")
+
+    # Validate hierarchy against every valid row, including zero-value summary
+    # rows. A summary row may legitimately arrive with zero because its amount
+    # will be calculated from its children below.
     valid_hierarchy_rows = [
         {"code": item["code"], "budget": item["budget"]}
         for item in unique.values()
@@ -204,10 +202,48 @@ def parse_budget_file(filename: str, content: bytes) -> dict:
             "missing_first_order_accounts",
         )
 
-    # Resolve the hierarchy only after all rows are known. This allows a parent
-    # such as 22-00-000-000-000 to contain 22-01..., which in turn contains
-    # 22-01-001... and 22-01-002..., without adding every level to the total.
-    included_accounts = apply_account_hierarchy(included_accounts)
+    # Build the complete catalog first, including zero-value summary rows, and
+    # then roll the budget upward. Every parent becomes the exact sum of its
+    # immediate child branches; leaves keep the amount uploaded in the file.
+    candidate_accounts = [
+        {
+            "code": item["code"],
+            "name": item["name"],
+            "budget": item["budget"],
+            "base_new_requirements": item["base_new_requirements"],
+            "obligated_cas": item["obligated_cas"],
+            "obligated_cas_provided": "cas" in columns,
+        }
+        for item in sorted(unique.values(), key=lambda row: row["code"])
+    ]
+    calculated_accounts = rollup_budget_by_hierarchy(candidate_accounts)
+    included_accounts = [
+        item for item in calculated_accounts if int(item.get("budget", 0) or 0) > 0
+    ]
+    if not included_accounts:
+        raise AppError("La planilla no contiene presupuesto vigente mayor a cero después del cálculo jerárquico.")
+
+    calculated_by_code = {item["code"]: item for item in calculated_accounts}
+    included_codes = {item["code"] for item in included_accounts}
+    for item in raw_rows:
+        calculated = calculated_by_code.get(item.get("code"))
+        if not calculated:
+            if item.get("code") and item.get("name"):
+                item["reason"] = "Sin presupuesto vigente"
+            continue
+        item["budget_original"] = int(item.get("budget", 0) or 0)
+        item["budget"] = int(calculated.get("budget", 0) or 0)
+        item["included"] = item["code"] in included_codes
+        item["calculated_from_children"] = bool(
+            calculated.get("budget_calculated_from_children")
+        )
+        if item["included"] and item["calculated_from_children"]:
+            item["reason"] = "Subtotal calculado por jerarquía"
+        elif item["included"]:
+            item["reason"] = "Monto de cuenta detalle"
+        else:
+            item["reason"] = "Sin presupuesto vigente"
+
     return {
         "filename": Path(filename).name[:255],
         "checksum": hashlib.sha256(content).hexdigest(),
@@ -215,15 +251,18 @@ def parse_budget_file(filename: str, content: bytes) -> dict:
         "valid_rows": len(unique),
         "included_rows": len(included_accounts),
         "excluded_rows": max(0, len(raw_rows) - len(included_accounts)),
-        # The overall budget is strictly the sum of structural first-order
-        # accounts (e.g. 215-22-00-000-000-000). Children are displayed but
-        # never promoted into the total when a parent is absent.
+        # First roll each hierarchy level upward; then the general total is the
+        # sum of structural first-order accounts only.
         "total_budget": first_order_budget_total(included_accounts),
-        "first_order_accounts": sum(1 for a in valid_hierarchy_rows if is_first_order_account(a["code"])),
-        # These two columns can also be repeated at parent/child levels in source
-        # spreadsheets, so calculate them without double counting branches.
-        "total_new_requirements": hierarchy_total(included_accounts, "base_new_requirements"),
-        "total_obligated_cas": hierarchy_total(included_accounts, "obligated_cas"),
+        "first_order_accounts": sum(
+            1 for a in included_accounts if is_first_order_account(a["code"])
+        ),
+        "total_new_requirements": hierarchy_total(
+            included_accounts, "base_new_requirements"
+        ),
+        "total_obligated_cas": hierarchy_total(
+            included_accounts, "obligated_cas"
+        ),
         "sample": raw_rows[:120],
         "accounts": included_accounts,
     }
