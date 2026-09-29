@@ -1,3 +1,6 @@
+
+> **Actualización 2.4.0:** En *Actualizar presupuesto > Versiones disponibles* se puede eliminar cualquier versión de presupuesto, incluida la versión base. Si se elimina la activa, se restaura la anterior cuando exista.
+
 # Sistema profesional de requerimientos presupuestarios
 
 Aplicación web multiusuario para administrar requerimientos y presupuestos de las áreas **Municipal, Salud y Educación**. Esta versión reemplaza la aplicación HTML local por una solución cliente-servidor con base de datos, autenticación, autorización, auditoría, control de concurrencia y despliegue mediante contenedores.

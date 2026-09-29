@@ -73,3 +73,11 @@
 - Se agregó eliminación de versiones cargadas por usuario.
 - Si se elimina la versión activa, se restaura automáticamente la versión anterior disponible.
 - La base incorporada no se puede eliminar.
+
+## 2.4.0 - Eliminación de versiones de presupuesto
+
+- Se agrega **Eliminar versión** a todas las versiones disponibles en Actualizar presupuesto.
+- Se permite eliminar versiones históricas, activas y base incorporada.
+- Al eliminar la activa se restaura la versión anterior más reciente cuando existe.
+- Si no queda ninguna versión, el año permanece creado sin presupuesto activo.
+- Se evita que una base eliminada voluntariamente reaparezca al reiniciar/desplegar.
