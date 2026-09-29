@@ -53,3 +53,12 @@
 - Las cuentas hijas ya no se promueven al total si falta una fila padre.
 - La vista previa informa cuántas cuentas de primer orden detectó y muestra el orden de cada fila.
 - Se incorpora una migración conservadora para corregir versiones activas cuando existe cobertura completa de cuentas de primer orden.
+
+## 2026-09-29 - Suma por niveles jerárquicos
+
+- El presupuesto se recalcula de abajo hacia arriba en cada rama contable.
+- Las cuentas padre con hijos toman como presupuesto la suma de sus hijos calculados.
+- Las cuentas detalle conservan el monto cargado en la planilla.
+- El total general sigue sumando solo las cuentas de primer orden.
+- La vista previa muestra monto original y monto jerárquico calculado.
+- Se agrega la migración `7d9e1f3a5b6c` para recalcular presupuestos existentes.
