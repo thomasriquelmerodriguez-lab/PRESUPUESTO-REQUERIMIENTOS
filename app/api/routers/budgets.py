@@ -224,8 +224,13 @@ def delete_version(
             f"Presupuesto eliminado. Se restauró automáticamente la versión "
             f"{result['restored_version']} del año {result['year']}."
         )
+    elif result["was_active"]:
+        message = (
+            f"Versión eliminada. El año {result['year']} quedó sin presupuesto activo "
+            f"porque no existen otras versiones disponibles."
+        )
     else:
-        message = "Presupuesto eliminado correctamente."
+        message = "Versión de presupuesto eliminada correctamente."
     return {"message": message, **result}
 
 

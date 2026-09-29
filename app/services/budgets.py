@@ -506,7 +506,13 @@ def build_replacement_snapshot(
 
 
 def delete_budget_version(db: Session, area_slug: str, version_id: str) -> dict:
-    """Delete a user-loaded budget version and roll back if it was active."""
+    """Delete any budget version and roll back if it was active.
+
+    Versions are immutable snapshots, so deleting a historical version does not
+    modify the remaining snapshots. If the active version is deleted, the most
+    recent remaining version for the same area/year becomes active. If none
+    remains, the budget period stays available but without an active budget.
+    """
     area = get_area(db, area_slug)
     version = db.execute(
         select(BudgetVersion).where(
@@ -516,11 +522,6 @@ def delete_budget_version(db: Session, area_slug: str, version_id: str) -> dict:
     ).scalar_one_or_none()
     if not version:
         raise NotFoundError("El presupuesto cargado no existe.")
-    if version.is_seed:
-        raise ConflictError(
-            "La base incorporada del sistema no se puede eliminar. Puede restaurarla si necesita volver a esa versión."
-        )
-
     year = version.year
     was_active = bool(version.active)
     deleted_version_number = version.version_number
@@ -555,6 +556,7 @@ def delete_budget_version(db: Session, area_slug: str, version_id: str) -> dict:
         "year": year,
         "version_number": deleted_version_number,
         "source_name": source_name,
+        "was_seed": bool(version.is_seed),
         "was_active": was_active,
         "restored_version": rollback.version_number if rollback else None,
         "restored_version_id": rollback.id if rollback else None,

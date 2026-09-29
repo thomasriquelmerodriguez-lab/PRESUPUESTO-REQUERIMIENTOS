@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from app.core.config import BASE_DIR, get_settings
 from app.core.permissions import AREA_USER_DEFAULT_PERMISSIONS, MANAGER_DEFAULT_PERMISSIONS
 from app.core.security import hash_password
-from app.db.models import Area, BudgetVersion, Requirement, User, UserArea, UserPermission
+from app.db.models import Area, BudgetPeriod, BudgetVersion, Requirement, User, UserArea, UserPermission
 from app.services.accounts import hierarchy_level, matrix_code, parent_code
 from app.services.budgets import create_budget_version
 
@@ -113,7 +113,16 @@ def seed_database(db: Session) -> None:
     budget_count = db.execute(
         select(func.count(BudgetVersion.id)).where(BudgetVersion.area_id == municipal.id)
     ).scalar_one()
-    if budget_count == 0:
+    municipal_2026_period = db.execute(
+        select(BudgetPeriod.id).where(
+            BudgetPeriod.area_id == municipal.id,
+            BudgetPeriod.year == 2026,
+        )
+    ).scalar_one_or_none()
+    # Only seed the bundled municipal budget on a genuinely new database.
+    # If the user deliberately deletes every version later, BudgetPeriod remains
+    # as a tombstone and the base version is not recreated on the next deploy.
+    if budget_count == 0 and municipal_2026_period is None:
         accounts_path = BASE_DIR / "data" / "seed" / "accounts_municipal_2026.json"
         raw_accounts = json.loads(accounts_path.read_text(encoding="utf-8"))
         accounts = [

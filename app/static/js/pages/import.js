@@ -76,7 +76,7 @@ export async function loadVersions(){
     container.innerHTML=versions.length?versions.map(version=>{
       const actions=[];
       if(hasPermission('budgets.import')&&version.is_seed&&!version.active)actions.push(`<button class="button secondary" data-restore-year="${version.year}" type="button">Restaurar base</button>`);
-      if(hasPermission('budgets.import')&&!version.is_seed)actions.push(`<button class="button danger" data-delete-version="${escapeHtml(version.id)}" data-delete-year="${version.year}" data-delete-active="${version.active?'1':'0'}" type="button">Eliminar presupuesto</button>`);
+      if(hasPermission('budgets.import'))actions.push(`<button class="button danger" data-delete-version="${escapeHtml(version.id)}" data-delete-year="${version.year}" data-delete-active="${version.active?'1':'0'}" data-delete-seed="${version.is_seed?'1':'0'}" type="button">Eliminar versión</button>`);
       return `<article class="data-card"><div><h3>Presupuesto ${version.year} · versión ${version.version_number}</h3><div class="meta">${escapeHtml(version.source_name)} · ${new Date(version.created_at).toLocaleString('es-CL')}</div></div><div class="data-fields"><div class="data-field"><span>Total</span><strong>${money(version.total_budget)}</strong></div><div class="data-field"><span>Estado</span><strong>${version.active?'Activo':'Histórico'}</strong></div><div class="data-field"><span>Origen</span><strong>${version.is_seed?'Base incorporada':'Carga de usuario'}</strong></div></div>${actions.length?`<div class="data-actions">${actions.join('')}</div>`:''}</article>`;
     }).join(''):'<div class="progress-message">No hay presupuestos cargados para esta área.</div>';
   }catch(error){container.innerHTML=`<div class="callout error">${escapeHtml(error.message)}</div>`}
@@ -166,9 +166,17 @@ async function versionAction(event){
   const versionId=deleteButton.dataset.deleteVersion;
   const year=Number(deleteButton.dataset.deleteYear);
   const active=deleteButton.dataset.deleteActive==='1';
-  const message=active
-    ? `¿Eliminar el presupuesto vigente ${year}? Si existe una versión anterior, se restaurará automáticamente.`
-    : `¿Eliminar esta versión histórica del presupuesto ${year}?`;
+  const seed=deleteButton.dataset.deleteSeed==='1';
+  let message;
+  if(seed&&active){
+    message=`¿Eliminar la versión base activa del presupuesto ${year}? Si existe otra versión, se restaurará automáticamente; si no existe, el año quedará sin presupuesto.`;
+  }else if(seed){
+    message=`¿Eliminar definitivamente esta versión base del presupuesto ${year}? Después de eliminarla ya no podrá usar "Restaurar base" para esta versión.`;
+  }else if(active){
+    message=`¿Eliminar el presupuesto vigente ${year}? Si existe una versión anterior, se restaurará automáticamente; si no existe, el año quedará sin presupuesto.`;
+  }else{
+    message=`¿Eliminar definitivamente esta versión histórica del presupuesto ${year}?`;
+  }
   if(!await confirmAction(message))return;
   try{
     const result=await api(`/budgets/${state.area}/versions/${encodeURIComponent(versionId)}`,{method:'DELETE'});
