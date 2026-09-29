@@ -62,3 +62,14 @@
 - El total general sigue sumando solo las cuentas de primer orden.
 - La vista previa muestra monto original y monto jerárquico calculado.
 - Se agrega la migración `7d9e1f3a5b6c` para recalcular presupuestos existentes.
+
+## Reemplazo de presupuesto y eliminación de cargas
+
+- La actualización de un presupuesto ahora reemplaza valores por código de cuenta; nunca suma el monto nuevo al anterior.
+- Se admiten actualizaciones parciales: cuentas existentes se reemplazan, cuentas nuevas se incorporan y cuentas omitidas se conservan.
+- El total vigente se calcula únicamente desde las cuentas de primer orden del snapshot resultante.
+- Los montos de cuentas padre cargados en la planilla se conservan como valores vigentes y no son sobrescritos por una suma automática de hijos.
+- La vista previa muestra presupuesto anterior, presupuesto resultante y cantidad de cuentas nuevas/modificadas/conservadas.
+- Se agregó eliminación de versiones cargadas por usuario.
+- Si se elimina la versión activa, se restaura automáticamente la versión anterior disponible.
+- La base incorporada no se puede eliminar.
