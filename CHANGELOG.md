@@ -81,3 +81,9 @@
 - Al eliminar la activa se restaura la versión anterior más reciente cuando existe.
 - Si no queda ninguna versión, el año permanece creado sin presupuesto activo.
 - Se evita que una base eliminada voluntariamente reaparezca al reiniciar/desplegar.
+
+## Rango presupuestario desde 215-21
+- La importación excluye cuentas anteriores a 215-21 y otras clases contables como 115.
+- El total general suma solo cuentas de primer orden desde 215-21 en adelante.
+- Las filas excluidas se identifican en la vista previa con el motivo correspondiente.
+- Se mantiene compatibilidad con códigos abreviados que omiten el prefijo 215.
