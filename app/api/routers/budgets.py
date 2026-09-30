@@ -15,6 +15,7 @@ from app.schemas.budgets import (
     BudgetPeriodView,
     BudgetVersionView,
     DashboardMetrics,
+    DecisionDashboard,
     ImportApply,
     ImportPreview,
     ObligatedCasUpdate,
@@ -24,6 +25,7 @@ from app.services.budgets import (
     catalog,
     create_budget_period,
     dashboard_metrics,
+    decision_dashboard,
     delete_budget_version,
     list_budget_periods,
     list_versions,
@@ -89,6 +91,27 @@ def get_metrics(area: str, year: int, db: DbDep, user: CurrentUser):
     require_area(user, area)
     require_permission(user, "budgets.view")
     return dashboard_metrics(db, area, year)
+
+
+@router.get("/{area}/{year}/decision-dashboard", response_model=DecisionDashboard)
+def get_decision_dashboard(
+    area: str,
+    year: int,
+    db: DbDep,
+    user: CurrentUser,
+    matrix: str | None = Query(default=None, max_length=40),
+    account: str | None = Query(default=None, max_length=40),
+):
+    require_area(user, area)
+    require_permission(user, "budgets.view")
+    require_permission(user, "requirements.view")
+    return decision_dashboard(
+        db,
+        area,
+        year,
+        matrix=matrix,
+        account_code=account,
+    )
 
 
 @router.patch("/{area}/{year}/accounts/{account_id}/obligated-cas")

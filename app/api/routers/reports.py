@@ -9,7 +9,7 @@ from fastapi.templating import Jinja2Templates
 
 from app.api.deps import CurrentUser, DbDep, require_area, require_permission
 from app.core.config import BASE_DIR
-from app.services.budgets import catalog
+from app.services.budgets import catalog, decision_dashboard
 from app.services.requirements import list_requirements
 
 router = APIRouter(prefix="/reports", tags=["reports"])
@@ -64,6 +64,38 @@ def requirements_report(
             "total": records["total"],
             "total_amount": records["total_amount"],
             "summary": sorted(summary.items()),
+            "generated_at": datetime.now().strftime("%d-%m-%Y %H:%M"),
+            "generated_by": user["display_name"],
+        },
+    )
+
+
+@router.get("/dashboard", response_class=HTMLResponse)
+def dashboard_report(
+    request: Request,
+    db: DbDep,
+    user: CurrentUser,
+    area: str = Query(...),
+    year: int = Query(..., ge=2020, le=2100),
+    matrix: str | None = Query(default=None, max_length=40),
+    account: str | None = Query(default=None, max_length=40),
+):
+    require_area(user, area)
+    require_permission(user, "reports.generate")
+    data = decision_dashboard(
+        db, area, year, matrix=matrix, account_code=account
+    )
+    max_month = max((item["requirements_amount"] for item in data["monthly"]), default=0) or 1
+    max_breakdown = max((item["budget"] for item in data["breakdown"]), default=0) or 1
+    return templates.TemplateResponse(
+        request=request,
+        name="dashboard_report.html",
+        context={
+            "area": area.capitalize(),
+            "year": year,
+            "data": data,
+            "max_month": max_month,
+            "max_breakdown": max_breakdown,
             "generated_at": datetime.now().strftime("%d-%m-%Y %H:%M"),
             "generated_by": user["display_name"],
         },
