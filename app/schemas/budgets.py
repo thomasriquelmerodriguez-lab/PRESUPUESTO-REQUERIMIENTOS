@@ -45,6 +45,52 @@ class DashboardMetrics(ApiModel):
     total_available: int
 
 
+class DashboardAccountBreakdown(ApiModel):
+    code: str
+    name: str
+    level: int
+    budget: int
+    requirements: int
+    obligated_cas: int
+    available: int
+    committed_percent: float
+    status: str
+
+
+class DashboardMonth(ApiModel):
+    month: int
+    label: str
+    requirements_count: int
+    requirements_amount: int
+
+
+class DashboardAttention(ApiModel):
+    negative_balance_accounts: int
+    over_90_percent_accounts: int
+    low_balance_accounts: int
+    unmapped_requirements_count: int
+    unmapped_requirements_amount: int
+
+
+class DecisionDashboard(ApiModel):
+    area: str
+    year: int
+    scope_code: str | None = None
+    scope_name: str | None = None
+    requirements_count: int
+    accounts_used: int
+    total_budget: int
+    total_requirements: int
+    total_obligated_cas: int
+    total_available: int
+    committed_percent: float
+    breakdown: list[DashboardAccountBreakdown]
+    monthly: list[DashboardMonth]
+    critical_accounts: list[DashboardAccountBreakdown]
+    top_requirement_accounts: list[DashboardAccountBreakdown]
+    attention: DashboardAttention
+
+
 class ObligatedCasUpdate(ApiModel):
     amount: int = Field(ge=0, le=9_000_000_000_000_000)
     row_version: int = Field(ge=1)

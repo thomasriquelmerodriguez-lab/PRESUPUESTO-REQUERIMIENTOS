@@ -7,7 +7,13 @@ from sqlalchemy.orm import Session
 
 from app.core.exceptions import AppError, ConflictError, NotFoundError
 from app.db.models import Area, BudgetAccount, BudgetPeriod, BudgetVersion, Requirement
-from app.services.accounts import apply_account_hierarchy, first_order_budget_total, is_budget_scope_account, matrix_code
+from app.services.accounts import (
+    apply_account_hierarchy,
+    first_order_budget_total,
+    is_budget_scope_account,
+    is_first_order_account,
+    matrix_code,
+)
 
 
 def get_area(db: Session, slug: str) -> Area:
@@ -300,6 +306,316 @@ def dashboard_metrics(db: Session, area_slug: str, year: int) -> dict:
         "total_available": int(version.total_budget) - total_new - total_obligated,
     }
 
+
+
+_MONTH_LABELS = (
+    "Ene", "Feb", "Mar", "Abr", "May", "Jun",
+    "Jul", "Ago", "Sep", "Oct", "Nov", "Dic",
+)
+
+
+def _children_by_code(accounts: list[BudgetAccount]) -> dict[str, list[str]]:
+    codes = {account.code for account in accounts}
+    children: dict[str, list[str]] = defaultdict(list)
+    for account in accounts:
+        if account.parent_code and account.parent_code in codes:
+            children[account.parent_code].append(account.code)
+    return children
+
+
+def _branch_cas_by_account(accounts: list[BudgetAccount]) -> dict[str, int]:
+    """Return non-duplicated CAS for every account branch.
+
+    Parent CAS values sometimes repeat the amount contained in descendants.  A
+    branch therefore uses the greater of the parent's direct CAS or the sum of
+    child branches, matching the non-duplicated total used by the budget
+    summary while also making the value available for each dashboard row.
+    """
+    by_code = {account.code: account for account in accounts}
+    children = _children_by_code(accounts)
+    memo: dict[str, int] = {}
+
+    def branch_total(code: str) -> int:
+        if code in memo:
+            return memo[code]
+        descendants = sum(branch_total(child) for child in children.get(code, []))
+        memo[code] = max(int(by_code[code].obligated_cas), descendants)
+        return memo[code]
+
+    for code in by_code:
+        branch_total(code)
+    return memo
+
+
+def _scope_codes(
+    accounts: list[BudgetAccount],
+    selected_code: str | None,
+) -> set[str]:
+    by_code = {account.code: account for account in accounts}
+    if not selected_code:
+        return set(by_code)
+    if selected_code not in by_code:
+        raise NotFoundError("La cuenta seleccionada no pertenece al presupuesto vigente.")
+    children = _children_by_code(accounts)
+    result: set[str] = set()
+    pending = [selected_code]
+    while pending:
+        code = pending.pop()
+        if code in result:
+            continue
+        result.add(code)
+        pending.extend(children.get(code, []))
+    return result
+
+
+def _dashboard_status(committed_percent: float, available: int) -> str:
+    if available < 0 or committed_percent >= 90:
+        return "red"
+    if committed_percent >= 75:
+        return "orange"
+    if committed_percent >= 50:
+        return "yellow"
+    return "green"
+
+
+def _dashboard_account_row(
+    account: BudgetAccount,
+    *,
+    rolled_requirements: dict[str, int],
+    branch_cas: dict[str, int],
+) -> dict:
+    budget = int(account.budget)
+    requirements = int(rolled_requirements.get(account.code, 0))
+    obligated_cas = int(branch_cas.get(account.code, int(account.obligated_cas)))
+    available = budget - requirements - obligated_cas
+    committed = ((requirements + obligated_cas) / budget * 100) if budget > 0 else 0.0
+    return {
+        "code": account.code,
+        "name": account.name,
+        "level": account.level,
+        "budget": budget,
+        "requirements": requirements,
+        "obligated_cas": obligated_cas,
+        "available": available,
+        "committed_percent": round(committed, 2),
+        "status": _dashboard_status(committed, available),
+    }
+
+
+def decision_dashboard(
+    db: Session,
+    area_slug: str,
+    year: int,
+    *,
+    matrix: str | None = None,
+    account_code: str | None = None,
+) -> dict:
+    """Build decision-oriented indicators without double-counting hierarchy.
+
+    Overall totals use only the active budget snapshot and the non-duplicated
+    CAS total.  Requirements are sourced from the requirement registry.  When a
+    matrix/account filter is selected, metrics represent that branch only.
+    """
+    area = get_area(db, area_slug)
+    version = active_budget_version(db, area_slug, year)
+    accounts = list(
+        db.execute(
+            select(BudgetAccount)
+            .where(BudgetAccount.budget_version_id == version.id)
+            .order_by(BudgetAccount.code)
+        ).scalars()
+    )
+    accounts = [account for account in accounts if is_budget_scope_account(account.code)]
+    by_code = {account.code: account for account in accounts}
+    children = _children_by_code(accounts)
+
+    selected_code = account_code or matrix
+    if matrix and matrix not in by_code:
+        raise NotFoundError("La cuenta matriz seleccionada no existe en el presupuesto vigente.")
+    if account_code and account_code not in by_code:
+        raise NotFoundError("La cuenta seleccionada no existe en el presupuesto vigente.")
+    if matrix and account_code:
+        matrix_scope = _scope_codes(accounts, matrix)
+        if account_code not in matrix_scope:
+            raise AppError(
+                "La cuenta específica no pertenece a la cuenta matriz seleccionada.",
+                422,
+                "invalid_dashboard_scope",
+            )
+
+    scope = _scope_codes(accounts, selected_code)
+    exact_requirements = requirements_by_account(db, area.id, year)
+    rolled_requirements = _rollup_requirements(accounts, exact_requirements)
+    branch_cas = _branch_cas_by_account(accounts)
+
+    if selected_code:
+        selected = by_code[selected_code]
+        total_budget = int(selected.budget)
+        total_requirements = int(rolled_requirements.get(selected_code, 0))
+        total_obligated = int(branch_cas.get(selected_code, int(selected.obligated_cas)))
+        scope_name = selected.name
+    else:
+        total_budget = int(version.total_budget)
+        # Keep every active requirement in the global total, including legacy
+        # requirements whose account is no longer present in the active budget.
+        # Those rows are also surfaced separately as an attention warning.
+        total_requirements = sum(int(amount) for amount in exact_requirements.values())
+        total_obligated = _effective_cas_total(accounts)
+        scope_name = None
+
+    total_available = total_budget - total_requirements - total_obligated
+    committed_percent = (
+        (total_requirements + total_obligated) / total_budget * 100
+        if total_budget > 0
+        else 0.0
+    )
+
+    # Requirement details are read once and reused for monthly and count stats.
+    requirement_rows = list(
+        db.execute(
+            select(Requirement.request_date, Requirement.amount, Requirement.account_code)
+            .where(
+                Requirement.area_id == area.id,
+                Requirement.budget_year == year,
+                Requirement.deleted_at.is_(None),
+            )
+        ).all()
+    )
+    scoped_requirement_rows = [
+        row for row in requirement_rows if (not selected_code or row.account_code in scope)
+    ]
+    requirements_count = len(scoped_requirement_rows)
+    accounts_used = len({row.account_code for row in scoped_requirement_rows})
+
+    month_amounts = [0] * 12
+    month_counts = [0] * 12
+    for request_date, amount, _code in scoped_requirement_rows:
+        if request_date:
+            index = int(request_date.month) - 1
+            month_amounts[index] += int(amount or 0)
+            month_counts[index] += 1
+    monthly = [
+        {
+            "month": index + 1,
+            "label": _MONTH_LABELS[index],
+            "requirements_count": month_counts[index],
+            "requirements_amount": month_amounts[index],
+        }
+        for index in range(12)
+    ]
+
+    # First level overview, or the direct children of a selected branch for drill-down.
+    if selected_code:
+        display_codes = sorted(children.get(selected_code, [])) or [selected_code]
+    else:
+        display_codes = sorted(
+            account.code for account in accounts if is_first_order_account(account.code)
+        )
+    breakdown = [
+        _dashboard_account_row(
+            by_code[code],
+            rolled_requirements=rolled_requirements,
+            branch_cas=branch_cas,
+        )
+        for code in display_codes
+        if code in scope
+    ]
+
+    leaf_codes = [
+        code for code in scope
+        if code in by_code and not children.get(code) and int(by_code[code].budget) > 0
+    ]
+    leaf_rows = [
+        _dashboard_account_row(
+            by_code[code],
+            rolled_requirements=rolled_requirements,
+            branch_cas=branch_cas,
+        )
+        for code in leaf_codes
+    ]
+    critical_candidates = [
+        row for row in leaf_rows
+        if row["available"] < 0
+        or row["committed_percent"] >= 75
+        or row["available"] <= 5_000_000
+    ]
+    critical_accounts = sorted(
+        critical_candidates,
+        key=lambda row: (
+            0 if row["available"] < 0 else 1,
+            -float(row["committed_percent"]),
+            int(row["available"]),
+            row["code"],
+        ),
+    )[:12]
+
+    exact_in_scope = {
+        code: int(amount)
+        for code, amount in exact_requirements.items()
+        if (not selected_code or code in scope) and int(amount) > 0
+    }
+    top_requirement_accounts = []
+    for code, amount in sorted(
+        exact_in_scope.items(), key=lambda item: (-item[1], item[0])
+    )[:10]:
+        account = by_code.get(code)
+        if account:
+            row = _dashboard_account_row(
+                account,
+                rolled_requirements=rolled_requirements,
+                branch_cas=branch_cas,
+            )
+            row["requirements"] = amount
+            top_requirement_accounts.append(row)
+        else:
+            top_requirement_accounts.append(
+                {
+                    "code": code,
+                    "name": "Cuenta no presente en el presupuesto vigente",
+                    "level": 0,
+                    "budget": 0,
+                    "requirements": amount,
+                    "obligated_cas": 0,
+                    "available": -amount,
+                    "committed_percent": 0.0,
+                    "status": "red",
+                }
+            )
+
+    mapped_codes = set(by_code)
+    unmapped_rows = [row for row in requirement_rows if row.account_code not in mapped_codes]
+    if selected_code:
+        # Orphans cannot be safely assigned to a filtered branch.
+        unmapped_rows = []
+
+    attention = {
+        "negative_balance_accounts": sum(1 for row in leaf_rows if row["available"] < 0),
+        "over_90_percent_accounts": sum(1 for row in leaf_rows if row["committed_percent"] >= 90),
+        "low_balance_accounts": sum(
+            1 for row in leaf_rows if 0 <= row["available"] <= 5_000_000
+        ),
+        "unmapped_requirements_count": len(unmapped_rows),
+        "unmapped_requirements_amount": sum(int(row.amount or 0) for row in unmapped_rows),
+    }
+
+    return {
+        "area": area_slug,
+        "year": year,
+        "scope_code": selected_code,
+        "scope_name": scope_name,
+        "requirements_count": requirements_count,
+        "accounts_used": accounts_used,
+        "total_budget": total_budget,
+        "total_requirements": total_requirements,
+        "total_obligated_cas": total_obligated,
+        "total_available": total_available,
+        "committed_percent": round(committed_percent, 2),
+        "breakdown": breakdown,
+        "monthly": monthly,
+        "critical_accounts": critical_accounts,
+        "top_requirement_accounts": top_requirement_accounts,
+        "attention": attention,
+    }
 
 def update_obligated_cas(
     db: Session,

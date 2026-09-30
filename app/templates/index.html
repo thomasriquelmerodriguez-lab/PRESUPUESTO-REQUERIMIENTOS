@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="light">
   <title>{{ app_name }}</title>
-  <link rel="stylesheet" href="/static/css/app.css?v=20260929-2">
-  <script type="module" src="/static/js/r20260929/app.js"></script>
+  <link rel="stylesheet" href="/static/css/app.css?v=20260929-dashboard1">
+  <script type="module" src="/static/js/r20260929_dashboard/app.js"></script>
 </head>
 <body>
   <div id="liveRegion" class="sr-only" aria-live="polite"></div>
@@ -41,6 +41,7 @@
         <button data-page="request" class="nav-button active" type="button">Nuevo requerimiento</button>
         <button data-page="records" class="nav-button" type="button">Registros guardados</button>
         <button data-page="budget" class="nav-button" type="button">Presupuesto vigente</button>
+        <button data-page="dashboard" class="nav-button" type="button">Dashboard presupuestario</button>
         <button data-page="import" class="nav-button" type="button">Actualizar presupuesto</button>
         <button data-page="audit" id="auditNav" class="nav-button" type="button" hidden>Auditoría</button>
         <button data-page="users" id="usersNav" class="nav-button" type="button" hidden>Usuarios y privilegios</button>
@@ -130,6 +131,50 @@
             <div class="level-legend" aria-label="Niveles de cuentas"><span class="level-0">Matriz</span><span class="level-1">Nivel 1</span><span class="level-2">Nivel 2</span><span class="level-3">Nivel 3</span><span class="level-4">Nivel 4</span></div>
             <div id="budgetList" class="data-list"></div>
           </article>
+        </section>
+
+        <section id="page-dashboard" class="page">
+          <article class="panel">
+            <div class="panel-heading"><div><h2>Dashboard de gestión presupuestaria</h2><p>Indicadores para toma de decisiones basados en presupuesto vigente, Obligado CAS y requerimientos guardados, sin duplicar niveles jerárquicos.</p></div><button id="dashboardReport" class="button primary" type="button">Generar reporte</button></div>
+            <div class="filters three">
+              <label>Año<select id="dashboardYear"></select></label>
+              <label>Cuenta de primer orden<select id="dashboardMatrix"><option value="">Todas las cuentas de primer orden</option></select></label>
+              <label>Cuenta específica<select id="dashboardAccount" disabled><option value="">Toda la cuenta seleccionada</option></select></label>
+            </div>
+            <div id="dashboardScope" class="summary-line"></div>
+          </article>
+
+          <div id="dashboardMetrics" class="metrics dashboard-metrics" aria-label="Indicadores de gestión"></div>
+          <div id="dashboardAttention" class="decision-alerts" aria-label="Alertas presupuestarias"></div>
+
+          <div class="dashboard-grid">
+            <article class="panel dashboard-panel">
+              <div class="panel-heading"><div><h2>Estado presupuestario por cuenta</h2><p>Presupuesto, requerimientos, Obligado CAS y saldo disponible por rama.</p></div></div>
+              <div class="chart-legend"><span class="legend-requirements">Requerimientos</span><span class="legend-cas">Obligado CAS</span><span class="legend-available">Saldo disponible</span></div>
+              <div id="dashboardAccountChart" class="dashboard-chart"></div>
+            </article>
+            <article class="panel dashboard-panel">
+              <div class="panel-heading"><div><h2>Evolución mensual de requerimientos</h2><p>Monto y cantidad de requerimientos registrados durante el año seleccionado.</p></div></div>
+              <div id="dashboardMonthlyChart" class="dashboard-chart"></div>
+              <div id="dashboardMonthlySummary" class="summary-line"></div>
+            </article>
+          </div>
+
+          <article class="panel">
+            <div class="panel-heading"><div><h2>Detalle por cuenta</h2><p>El porcentaje comprometido considera Requerimientos + Obligado CAS sobre el presupuesto vigente.</p></div><div class="semaphore-legend"><span class="green">0–50%</span><span class="yellow">50–75%</span><span class="orange">75–90%</span><span class="red">90% o más</span></div></div>
+            <div id="dashboardBreakdownTable"></div>
+          </article>
+
+          <div class="dashboard-grid">
+            <article class="panel">
+              <div class="panel-heading"><div><h2>Cuentas que requieren atención</h2><p>Saldo negativo, compromiso superior al 75% o saldo disponible igual o inferior a $5.000.000.</p></div></div>
+              <div id="dashboardCritical" class="decision-account-list"></div>
+            </article>
+            <article class="panel">
+              <div class="panel-heading"><div><h2>Mayor monto de requerimientos</h2><p>Ranking de cuentas según los requerimientos registrados directamente en cada cuenta.</p></div></div>
+              <div id="dashboardTopRequirements" class="ranking-list"></div>
+            </article>
+          </div>
         </section>
 
         <section id="page-import" class="page">

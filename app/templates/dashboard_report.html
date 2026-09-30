@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard presupuestario</title>
+  <link rel="stylesheet" href="/static/css/report.css?v=20260929-dashboard">
+</head>
+<body>
+  <header class="report-header">
+    <img src="/static/img/municipalidad-illapel.png" alt="Municipalidad de Illapel">
+    <div>
+      <h1>Dashboard de gestión presupuestaria</h1>
+      <p>{{ area }} · Año {{ year }}</p>
+      {% if data.scope_code %}<p>{{ data.scope_code }} · {{ data.scope_name }}</p>{% endif %}
+    </div>
+  </header>
+
+  <section class="report-meta dashboard-report-meta">
+    <div><span>Presupuesto vigente</span><strong>${{ "{:,.0f}".format(data.total_budget).replace(",", ".") }}</strong></div>
+    <div><span>Obligado CAS</span><strong>${{ "{:,.0f}".format(data.total_obligated_cas).replace(",", ".") }}</strong></div>
+    <div><span>Requerimientos</span><strong>${{ "{:,.0f}".format(data.total_requirements).replace(",", ".") }}</strong></div>
+    <div><span>Saldo disponible</span><strong class="{% if data.total_available < 0 %}report-negative{% endif %}">${{ "{:,.0f}".format(data.total_available).replace(",", ".") }}</strong></div>
+    <div><span>% comprometido</span><strong>{{ "{:.1f}".format(data.committed_percent) }}%</strong></div>
+  </section>
+
+  <h2>Estado por cuenta</h2>
+  <table>
+    <thead><tr><th>Cuenta</th><th>Denominación</th><th class="number">Presupuesto</th><th class="number">CAS</th><th class="number">Requerimientos</th><th class="number">Saldo</th><th class="number">Comprometido</th></tr></thead>
+    <tbody>
+      {% for item in data.breakdown %}
+      <tr>
+        <td>{{ item.code }}</td><td>{{ item.name }}</td>
+        <td class="number">${{ "{:,.0f}".format(item.budget).replace(",", ".") }}</td>
+        <td class="number">${{ "{:,.0f}".format(item.obligated_cas).replace(",", ".") }}</td>
+        <td class="number">${{ "{:,.0f}".format(item.requirements).replace(",", ".") }}</td>
+        <td class="number {% if item.available < 0 %}report-negative{% endif %}">${{ "{:,.0f}".format(item.available).replace(",", ".") }}</td>
+        <td class="number">{{ "{:.1f}".format(item.committed_percent) }}%</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>Evolución mensual de requerimientos</h2>
+  <div class="report-month-chart" aria-label="Evolución mensual">
+    {% for item in data.monthly %}
+      {% set h = (item.requirements_amount / max_month * 150) if max_month else 0 %}
+      <div class="report-month-column">
+        <svg viewBox="0 0 50 180" role="img" aria-label="{{ item.label }} ${{ item.requirements_amount }}">
+          <rect x="8" y="{{ 160 - h }}" width="34" height="{{ h }}" rx="3" class="report-chart-bar"></rect>
+          <text x="25" y="176" text-anchor="middle">{{ item.label }}</text>
+        </svg>
+        <small>${{ "{:,.0f}".format(item.requirements_amount).replace(",", ".") }}</small>
+      </div>
+    {% endfor %}
+  </div>
+
+  <h2>Cuentas que requieren atención</h2>
+  <table>
+    <thead><tr><th>Cuenta</th><th>Denominación</th><th class="number">Saldo</th><th class="number">Comprometido</th></tr></thead>
+    <tbody>
+      {% for item in data.critical_accounts %}
+      <tr><td>{{ item.code }}</td><td>{{ item.name }}</td><td class="number {% if item.available < 0 %}report-negative{% endif %}">${{ "{:,.0f}".format(item.available).replace(",", ".") }}</td><td class="number">{{ "{:.1f}".format(item.committed_percent) }}%</td></tr>
+      {% else %}
+      <tr><td colspan="4">No hay cuentas críticas para los filtros seleccionados.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <footer>Generado el {{ generated_at }} por {{ generated_by }}.</footer>
+  <script src="/static/js/report.js" defer></script>
+</body>
+</html>
