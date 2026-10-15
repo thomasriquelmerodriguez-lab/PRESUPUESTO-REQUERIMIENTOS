@@ -6,7 +6,8 @@ from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import AppError, ConflictError, NotFoundError
-from app.db.models import Area, BudgetAccount, BudgetPeriod, BudgetVersion, Requirement
+from app.db.models import Area, BudgetAccount, BudgetPeriod, BudgetVersion, PurchaseOrder, Requirement
+from app.services.commitments import commitments_by_account, procurement_totals
 from app.services.accounts import (
     apply_account_hierarchy,
     first_order_budget_total,
@@ -123,24 +124,18 @@ def requirements_by_account(
     *,
     excluding_requirement_id: str | None = None,
 ) -> dict[str, int]:
-    """Return every active requirement grouped by its accounting code.
+    """Effective budget commitment grouped by accounting code.
 
-    `included_in_base` is intentionally ignored. The requirement registry is now the
-    source of truth for the amount consumed by new requirements, which prevents the
-    legacy PRE OBLIGADO value from being deducted a second time.
+    A requirement reserves its original amount until purchase orders are issued.
+    When the process closes, any difference is released. Purchase orders already
+    reconciled with Obligado CAS are not deducted again here.
     """
-    stmt = (
-        select(Requirement.account_code, func.coalesce(func.sum(Requirement.amount), 0))
-        .where(
-            Requirement.area_id == area_id,
-            Requirement.budget_year == year,
-            Requirement.deleted_at.is_(None),
-        )
-        .group_by(Requirement.account_code)
+    return commitments_by_account(
+        db,
+        area_id,
+        year,
+        excluding_requirement_id=excluding_requirement_id,
     )
-    if excluding_requirement_id:
-        stmt = stmt.where(Requirement.id != excluding_requirement_id)
-    return {code: int(total or 0) for code, total in db.execute(stmt).all()}
 
 
 def _rollup_requirements(
@@ -292,18 +287,25 @@ def dashboard_metrics(db: Session, area_slug: str, year: int) -> dict:
             Requirement.deleted_at.is_(None),
         )
     ).one()
-    total_new = int(request_stats[1] or 0)
+    procurement = procurement_totals(db, area.id, year)
+    total_commitment = int(procurement["effective_commitment"])
     total_obligated = _effective_cas_total(accounts)
     return {
         "area": area_slug,
         "year": year,
         "requirements_count": int(request_stats[0]),
-        "requirements_amount": total_new,
+        "requirements_amount": int(request_stats[1] or 0),
         "accounts_used": int(request_stats[2]),
         "total_budget": int(version.total_budget),
-        "total_new_requirements": total_new,
+        "total_new_requirements": total_commitment,
         "total_obligated_cas": total_obligated,
-        "total_available": int(version.total_budget) - total_new - total_obligated,
+        "total_available": int(version.total_budget) - total_commitment - total_obligated,
+        "original_requested": int(procurement["original_requested"]),
+        "purchase_orders": int(procurement["purchase_orders"]),
+        "orders_pending_cas": int(procurement["orders_pending_cas"]),
+        "orders_reconciled_cas": int(procurement["orders_reconciled_cas"]),
+        "reservation_pending": int(procurement["reservation_pending"]),
+        "released_amount": int(procurement["released_amount"]),
     }
 
 
@@ -447,11 +449,14 @@ def decision_dashboard(
     exact_requirements = requirements_by_account(db, area.id, year)
     rolled_requirements = _rollup_requirements(accounts, exact_requirements)
     branch_cas = _branch_cas_by_account(accounts)
+    procurement = procurement_totals(
+        db, area.id, year, account_codes=(scope if selected_code else None)
+    )
 
     if selected_code:
         selected = by_code[selected_code]
         total_budget = int(selected.budget)
-        total_requirements = int(rolled_requirements.get(selected_code, 0))
+        total_requirements = int(procurement["effective_commitment"])
         total_obligated = int(branch_cas.get(selected_code, int(selected.obligated_cas)))
         scope_name = selected.name
     else:
@@ -459,7 +464,7 @@ def decision_dashboard(
         # Keep every active requirement in the global total, including legacy
         # requirements whose account is no longer present in the active budget.
         # Those rows are also surfaced separately as an attention warning.
-        total_requirements = sum(int(amount) for amount in exact_requirements.values())
+        total_requirements = int(procurement["effective_commitment"])
         total_obligated = _effective_cas_total(accounts)
         scope_name = None
 
@@ -494,12 +499,35 @@ def decision_dashboard(
             index = int(request_date.month) - 1
             month_amounts[index] += int(amount or 0)
             month_counts[index] += 1
+    order_month_amounts = [0] * 12
+    order_month_counts = [0] * 12
+    order_rows = list(
+        db.execute(
+            select(PurchaseOrder.order_date, PurchaseOrder.amount, Requirement.account_code)
+            .join(Requirement, Requirement.id == PurchaseOrder.requirement_id)
+            .where(
+                Requirement.area_id == area.id,
+                Requirement.budget_year == year,
+                Requirement.deleted_at.is_(None),
+                PurchaseOrder.deleted_at.is_(None),
+            )
+        ).all()
+    )
+    for order_date, amount, code in order_rows:
+        if selected_code and code not in scope:
+            continue
+        if order_date:
+            index = int(order_date.month) - 1
+            order_month_amounts[index] += int(amount or 0)
+            order_month_counts[index] += 1
     monthly = [
         {
             "month": index + 1,
             "label": _MONTH_LABELS[index],
             "requirements_count": month_counts[index],
             "requirements_amount": month_amounts[index],
+            "purchase_orders_count": order_month_counts[index],
+            "purchase_orders_amount": order_month_amounts[index],
         }
         for index in range(12)
     ]
@@ -588,6 +616,7 @@ def decision_dashboard(
         # Orphans cannot be safely assigned to a filtered branch.
         unmapped_rows = []
 
+    unmapped_codes = {row.account_code for row in unmapped_rows}
     attention = {
         "negative_balance_accounts": sum(1 for row in leaf_rows if row["available"] < 0),
         "over_90_percent_accounts": sum(1 for row in leaf_rows if row["committed_percent"] >= 90),
@@ -595,7 +624,7 @@ def decision_dashboard(
             1 for row in leaf_rows if 0 <= row["available"] <= 5_000_000
         ),
         "unmapped_requirements_count": len(unmapped_rows),
-        "unmapped_requirements_amount": sum(int(row.amount or 0) for row in unmapped_rows),
+        "unmapped_requirements_amount": sum(int(exact_requirements.get(code, 0)) for code in unmapped_codes),
     }
 
     return {
@@ -607,6 +636,12 @@ def decision_dashboard(
         "accounts_used": accounts_used,
         "total_budget": total_budget,
         "total_requirements": total_requirements,
+        "total_original_requested": int(procurement["original_requested"]),
+        "total_purchase_orders": int(procurement["purchase_orders"]),
+        "total_orders_pending_cas": int(procurement["orders_pending_cas"]),
+        "total_orders_reconciled_cas": int(procurement["orders_reconciled_cas"]),
+        "total_reservation_pending": int(procurement["reservation_pending"]),
+        "total_released_amount": int(procurement["released_amount"]),
         "total_obligated_cas": total_obligated,
         "total_available": total_available,
         "committed_percent": round(committed_percent, 2),

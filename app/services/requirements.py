@@ -46,6 +46,8 @@ def _requirement_payload(
         "account_name": account_name or "",
         "matrix_code": account_matrix or matrix_code(row.account_code),
         "included_in_base": row.included_in_base,
+        "procurement_status": row.procurement_status,
+        "procurement_closed": row.procurement_closed,
         "version": row.version,
         "locked_by": locked_by,
         "lock_expires_at": row.lock_expires_at if locked_by else None,

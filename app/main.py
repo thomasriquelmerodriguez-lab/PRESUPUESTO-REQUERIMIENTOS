@@ -11,7 +11,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import delete, text
 
 from app.api.deps import DbDep
-from app.api.routers import audit, auth, backup, budgets, events, reports, requirements, users
+from app.api.routers import acquisitions, audit, auth, backup, budgets, events, reports, requirements, users
 from app.core.config import BASE_DIR, get_settings
 from app.core.exceptions import AppError
 from app.core.http import SecurityHeadersMiddleware
@@ -42,7 +42,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title=settings.app_name,
-    version="2.6.0",
+    version="2.7.0",
     debug=settings.debug,
     docs_url=None if settings.is_production else "/docs",
     redoc_url=None,
@@ -54,6 +54,7 @@ app.mount("/static", StaticFiles(directory=str(BASE_DIR / "app" / "static")), na
 
 app.include_router(auth.router, prefix="/api")
 app.include_router(requirements.router, prefix="/api")
+app.include_router(acquisitions.router, prefix="/api")
 app.include_router(budgets.router, prefix="/api")
 app.include_router(reports.router, prefix="/api")
 app.include_router(audit.router, prefix="/api")

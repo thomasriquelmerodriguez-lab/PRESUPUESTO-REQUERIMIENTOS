@@ -19,6 +19,8 @@ _PERMISSION_DEPENDENCIES = {
     "requirements.edit": {"requirements.view", "budgets.view"},
     "requirements.delete": {"requirements.view"},
     "requirements.export": {"requirements.view"},
+    "acquisitions.view": {"requirements.view", "budgets.view"},
+    "acquisitions.manage": {"acquisitions.view"},
     "budgets.edit_cas": {"budgets.view"},
     "budgets.import": {"budgets.view"},
     "budgets.export": {"budgets.view"},

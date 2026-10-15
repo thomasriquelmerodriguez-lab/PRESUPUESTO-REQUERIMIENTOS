@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="light">
   <title>{{ app_name }}</title>
-  <link rel="stylesheet" href="/static/css/app.css?v=20260929-dashboard1">
-  <script type="module" src="/static/js/r20260929_dashboard/app.js"></script>
+  <link rel="stylesheet" href="/static/css/app.css?v=20261015-acquisitions1">
+  <script type="module" src="/static/js/r20261015_acquisitions/app.js"></script>
 </head>
 <body>
   <div id="liveRegion" class="sr-only" aria-live="polite"></div>
@@ -40,6 +40,7 @@
       <nav aria-label="Navegación principal">
         <button data-page="request" class="nav-button active" type="button">Nuevo requerimiento</button>
         <button data-page="records" class="nav-button" type="button">Registros guardados</button>
+        <button data-page="acquisitions" class="nav-button" type="button">Adquisiciones / OC</button>
         <button data-page="budget" class="nav-button" type="button">Presupuesto vigente</button>
         <button data-page="dashboard" class="nav-button" type="button">Dashboard presupuestario</button>
         <button data-page="import" class="nav-button" type="button">Actualizar presupuesto</button>
@@ -119,6 +120,54 @@
           </article>
         </section>
 
+        <section id="page-acquisitions" class="page">
+          <div id="acqMetrics" class="metrics acquisition-metrics" aria-label="Resumen de adquisiciones"></div>
+          <article class="panel">
+            <div class="panel-heading"><div><h2>Adquisiciones y órdenes de compra</h2><p>Cruza el monto solicitado con lo adjudicado, libera diferencias al cerrar y evita descontar dos veces las OC conciliadas con Obligado CAS.</p></div></div>
+            <div class="filters three">
+              <label>Año<select id="acqYear"><option value="">Todos</option></select></label>
+              <label>Estado<select id="acqStatus"><option value="">Todos</option><option value="REGISTRADO">Registrado</option><option value="EN_ADQUISICIONES">En adquisiciones</option><option value="EN_LICITACION">En licitación</option><option value="ADJUDICADO">Adjudicado</option><option value="OC_EMITIDA">OC emitida</option><option value="CERRADO">Cerrado</option></select></label>
+              <label>Buscar<input id="acqSearch" type="search" maxlength="120" placeholder="Expediente, materia o cuenta"></label>
+            </div>
+            <div class="workflow-note"><strong>Regla presupuestaria:</strong> mientras el proceso esté abierto se mantiene reservada la diferencia no adjudicada. Al cerrar, esa diferencia se libera. Una OC conciliada con CAS deja de descontarse separadamente.</div>
+            <div id="acqSummary" class="summary-line"></div>
+            <div id="acqList" class="acquisition-list"></div>
+            <div class="pagination"><button id="acqPrev" class="button ghost" type="button">Anterior</button><span id="acqPage"></span><button id="acqNext" class="button ghost" type="button">Siguiente</button></div>
+          </article>
+
+          <dialog id="acqDialog" class="dialog acquisition-dialog">
+            <button id="closeAcqDialog" class="dialog-close" type="button" aria-label="Cerrar">×</button>
+            <div class="acq-dialog-header"><span class="eyebrow">Gestión de compra</span><h2 id="acqDialogTitle">Requerimiento</h2><p id="acqDialogMeta"></p></div>
+            <div id="acqDialogMetrics" class="preview-grid acquisition-preview"></div>
+            <form id="acqStatusForm" class="status-form">
+              <label>Etapa del proceso<select id="acqStatusEdit"></select></label>
+              <label class="checkbox-row close-requirement"><input id="acqClosed" type="checkbox"> Cerrar requerimiento y liberar diferencia no adjudicada</label>
+              <button class="button secondary" type="submit">Guardar estado</button>
+            </form>
+            <div class="reconciliation-explainer">
+              <strong>¿Cómo impacta el presupuesto?</strong>
+              <span>Solicitud abierta = OC pendientes de CAS + reserva restante. Solicitud cerrada = solo OC pendientes de CAS. Las OC conciliadas pasan a estar representadas por Obligado CAS.</span>
+            </div>
+            <section id="orderPanel" class="order-panel">
+              <h3>Registrar orden de compra</h3>
+              <form id="orderForm" class="order-form">
+                <input id="orderId" type="hidden"><input id="orderVersion" type="hidden">
+                <div class="form-grid three">
+                  <label>N.º OC *<input id="orderNumber" maxlength="120" required></label>
+                  <label>Fecha OC *<input id="orderDate" type="date" required></label>
+                  <label>Proveedor *<input id="orderSupplier" maxlength="250" required></label>
+                  <label>Monto OC *<input id="orderAmount" type="number" min="1" step="1" required></label>
+                  <label>Referencia licitación<input id="orderTender" maxlength="180" placeholder="ID Mercado Público / licitación"></label>
+                  <label>Observaciones<textarea id="orderNotes" maxlength="5000" rows="2"></textarea></label>
+                </div>
+                <label class="checkbox-row"><input id="orderClose" type="checkbox"> Esta OC cierra el requerimiento y libera el saldo no adjudicado</label>
+                <div class="form-actions"><button id="orderCancel" class="button ghost" type="button" hidden>Cancelar edición</button><button id="orderSave" class="button primary" type="submit">Agregar orden de compra</button></div>
+              </form>
+            </section>
+            <section class="orders-section"><div class="panel-heading"><div><h3>Órdenes asociadas</h3><p>Conciliar con CAS solo cuando la OC ya esté incluida en el Obligado CAS de la cuenta.</p></div></div><div id="orderList" class="purchase-order-list"></div></section>
+          </dialog>
+        </section>
+
         <section id="page-budget" class="page">
           <div id="budgetMetrics" class="metrics"></div>
           <article class="panel">
@@ -149,13 +198,13 @@
 
           <div class="dashboard-grid">
             <article class="panel dashboard-panel">
-              <div class="panel-heading"><div><h2>Estado presupuestario por cuenta</h2><p>Presupuesto, requerimientos, Obligado CAS y saldo disponible por rama.</p></div></div>
+              <div class="panel-heading"><div><h2>Estado presupuestario por cuenta</h2><p>Presupuesto, compromiso real de requerimientos/OC, Obligado CAS y saldo disponible por rama.</p></div></div>
               <div class="chart-legend"><span class="legend-requirements">Requerimientos</span><span class="legend-cas">Obligado CAS</span><span class="legend-available">Saldo disponible</span></div>
               <div id="dashboardAccountChart" class="dashboard-chart"></div>
             </article>
             <article class="panel dashboard-panel">
-              <div class="panel-heading"><div><h2>Evolución mensual de requerimientos</h2><p>Monto y cantidad de requerimientos registrados durante el año seleccionado.</p></div></div>
-              <div id="dashboardMonthlyChart" class="dashboard-chart"></div>
+              <div class="panel-heading"><div><h2>Solicitado vs. adjudicado por mes</h2><p>Compara el monto solicitado en requerimientos con las órdenes de compra emitidas.</p></div></div>
+              <div class="chart-legend"><span class="legend-requested">Solicitado</span><span class="legend-orders">Órdenes de compra</span></div><div id="dashboardMonthlyChart" class="dashboard-chart"></div>
               <div id="dashboardMonthlySummary" class="summary-line"></div>
             </article>
           </div>

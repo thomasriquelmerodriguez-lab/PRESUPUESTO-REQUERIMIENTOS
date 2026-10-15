@@ -1,0 +1,1 @@
+const button=document.createElement('button');button.type='button';button.className='print-actions';button.textContent='Imprimir o guardar PDF';button.addEventListener('click',()=>window.print());document.body.append(button);

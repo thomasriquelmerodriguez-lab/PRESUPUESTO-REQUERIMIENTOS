@@ -18,15 +18,17 @@
 
   <section class="report-meta dashboard-report-meta">
     <div><span>Presupuesto vigente</span><strong>${{ "{:,.0f}".format(data.total_budget).replace(",", ".") }}</strong></div>
+    <div><span>Solicitado original</span><strong>${{ "{:,.0f}".format(data.total_original_requested).replace(",", ".") }}</strong></div>
+    <div><span>Órdenes de compra</span><strong>${{ "{:,.0f}".format(data.total_purchase_orders).replace(",", ".") }}</strong></div>
+    <div><span>Saldo liberado</span><strong>${{ "{:,.0f}".format(data.total_released_amount).replace(",", ".") }}</strong></div>
+    <div><span>Compromiso req./OC</span><strong>${{ "{:,.0f}".format(data.total_requirements).replace(",", ".") }}</strong></div>
     <div><span>Obligado CAS</span><strong>${{ "{:,.0f}".format(data.total_obligated_cas).replace(",", ".") }}</strong></div>
-    <div><span>Requerimientos</span><strong>${{ "{:,.0f}".format(data.total_requirements).replace(",", ".") }}</strong></div>
-    <div><span>Saldo disponible</span><strong class="{% if data.total_available < 0 %}report-negative{% endif %}">${{ "{:,.0f}".format(data.total_available).replace(",", ".") }}</strong></div>
-    <div><span>% comprometido</span><strong>{{ "{:.1f}".format(data.committed_percent) }}%</strong></div>
+    <div><span>Saldo real disponible</span><strong class="{% if data.total_available < 0 %}report-negative{% endif %}">${{ "{:,.0f}".format(data.total_available).replace(",", ".") }}</strong></div>
   </section>
 
   <h2>Estado por cuenta</h2>
   <table>
-    <thead><tr><th>Cuenta</th><th>Denominación</th><th class="number">Presupuesto</th><th class="number">CAS</th><th class="number">Requerimientos</th><th class="number">Saldo</th><th class="number">Comprometido</th></tr></thead>
+    <thead><tr><th>Cuenta</th><th>Denominación</th><th class="number">Presupuesto</th><th class="number">CAS</th><th class="number">Compromiso req./OC</th><th class="number">Saldo</th><th class="number">Comprometido</th></tr></thead>
     <tbody>
       {% for item in data.breakdown %}
       <tr>
@@ -41,19 +43,15 @@
     </tbody>
   </table>
 
-  <h2>Evolución mensual de requerimientos</h2>
-  <div class="report-month-chart" aria-label="Evolución mensual">
-    {% for item in data.monthly %}
-      {% set h = (item.requirements_amount / max_month * 150) if max_month else 0 %}
-      <div class="report-month-column">
-        <svg viewBox="0 0 50 180" role="img" aria-label="{{ item.label }} ${{ item.requirements_amount }}">
-          <rect x="8" y="{{ 160 - h }}" width="34" height="{{ h }}" rx="3" class="report-chart-bar"></rect>
-          <text x="25" y="176" text-anchor="middle">{{ item.label }}</text>
-        </svg>
-        <small>${{ "{:,.0f}".format(item.requirements_amount).replace(",", ".") }}</small>
-      </div>
-    {% endfor %}
-  </div>
+  <h2>Solicitado vs. órdenes de compra por mes</h2>
+  <table>
+    <thead><tr><th>Mes</th><th class="number">Solicitado</th><th class="number">Órdenes de compra</th></tr></thead>
+    <tbody>
+      {% for item in data.monthly %}
+      <tr><td>{{ item.label }}</td><td class="number">${{ "{:,.0f}".format(item.requirements_amount).replace(",", ".") }}</td><td class="number">${{ "{:,.0f}".format(item.purchase_orders_amount).replace(",", ".") }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
 
   <h2>Cuentas que requieren atención</h2>
   <table>
