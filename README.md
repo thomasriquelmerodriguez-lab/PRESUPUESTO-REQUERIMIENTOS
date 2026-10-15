@@ -130,4 +130,10 @@ Desde la actualización del 29-09-2026, una cuenta padre con cuentas hijas no co
 
 ### Actualización de presupuestos por reemplazo
 
-Al cargar una nueva planilla para un área y año que ya tienen presupuesto, los valores se actualizan por código de cuenta: el nuevo monto reemplaza al anterior y nunca se suma a él. Las cuentas nuevas se incorporan y las cuentas no incluidas se conservan. El total general se obtiene de las cuentas de primer orden. Desde el historial también se pueden eliminar versiones cargadas por usuario; al eliminar la versión activa se restaura la anterior disponible.
+Al cargar una nueva planilla para un área y año que ya tienen presupuesto, los valores se actualizan por código de cuenta: el nuevo monto reemplaza al anterior y nunca se suma a él. Las cuentas nuevas se incorporan y la nueva planilla pasa a ser la fotografía completa del presupuesto vigente; las cuentas ausentes dejan de formar parte de la versión activa. El total general se obtiene de las cuentas de primer orden. Desde el historial también se pueden eliminar versiones cargadas por usuario; al eliminar la versión activa se restaura la anterior disponible.
+
+## Adquisiciones y órdenes de compra (v2.7.0)
+
+El módulo **Adquisiciones / OC** permite convertir la reserva inicial de un requerimiento en un compromiso real de acuerdo con las órdenes de compra emitidas. Si una solicitud por $10.000.000 se cierra con una OC por $7.000.000, se liberan $3.000.000. Cuando esa OC ya está incluida en Obligado CAS, puede marcarse como conciliada para impedir que el sistema la descuente dos veces.
+
+Consulte `ACTUALIZACION_ADQUISICIONES_OC.md` y `VISTA_PREVIA_ADQUISICIONES.html`.

@@ -99,3 +99,14 @@
 - El total general suma solo cuentas de primer orden desde 215-21 en adelante.
 - Las filas excluidas se identifican en la vista previa con el motivo correspondiente.
 - Se mantiene compatibilidad con códigos abreviados que omiten el prefijo 215.
+
+## 2.7.0 - 2026-10-15
+- Nuevo módulo Adquisiciones / Órdenes de Compra.
+- Estados de proceso desde Registrado hasta Cerrado.
+- Registro, edición y eliminación de múltiples OC por requerimiento.
+- Liberación automática de diferencia al cerrar un requerimiento.
+- Conciliación manual OC ↔ Obligado CAS para evitar doble descuento.
+- Saldo presupuestario calculado con compromiso efectivo req./OC + CAS.
+- Dashboard ampliado con solicitado, adjudicado, saldo liberado y comparación mensual.
+- Nuevos permisos `acquisitions.view` y `acquisitions.manage`.
+- Respaldo JSON v3 con órdenes de compra y estado de adquisiciones.
