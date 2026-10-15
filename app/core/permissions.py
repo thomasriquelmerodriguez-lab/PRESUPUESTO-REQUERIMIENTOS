@@ -17,6 +17,8 @@ PERMISSION_DEFINITIONS: tuple[PermissionDefinition, ...] = (
     PermissionDefinition("requirements.edit", "Editar requerimientos", "Modificar registros y gestionar bloqueos de edición.", "Requerimientos"),
     PermissionDefinition("requirements.delete", "Eliminar requerimientos", "Eliminar lógicamente registros existentes.", "Requerimientos"),
     PermissionDefinition("requirements.export", "Exportar requerimientos", "Descargar listados de requerimientos en CSV.", "Requerimientos"),
+    PermissionDefinition("acquisitions.view", "Visualizar adquisiciones y OC", "Consultar el avance de requerimientos, licitaciones y órdenes de compra.", "Adquisiciones"),
+    PermissionDefinition("acquisitions.manage", "Gestionar adquisiciones y OC", "Registrar estados, órdenes de compra, cierres y conciliación con CAS.", "Adquisiciones"),
     PermissionDefinition("budgets.view", "Visualizar presupuesto", "Consultar cuentas, saldos e indicadores presupuestarios.", "Presupuesto"),
     PermissionDefinition("budgets.edit_cas", "Modificar Obligado CAS", "Editar el monto de Obligado CAS por cuenta.", "Presupuesto"),
     PermissionDefinition("budgets.import", "Actualizar presupuesto", "Cargar, aplicar y restaurar planillas presupuestarias.", "Presupuesto"),

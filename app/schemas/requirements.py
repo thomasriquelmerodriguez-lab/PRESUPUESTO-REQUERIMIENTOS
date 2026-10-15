@@ -46,6 +46,8 @@ class RequirementView(ApiModel):
     account_name: str = ""
     matrix_code: str = ""
     included_in_base: bool
+    procurement_status: str = "REGISTRADO"
+    procurement_closed: bool = False
     version: int
     locked_by: str | None = None
     lock_expires_at: datetime | None = None

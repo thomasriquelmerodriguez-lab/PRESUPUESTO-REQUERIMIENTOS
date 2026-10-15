@@ -201,13 +201,46 @@ class Requirement(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    procurement_status: Mapped[str] = mapped_column(String(30), default="REGISTRADO", nullable=False, index=True)
+    procurement_closed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, index=True)
+    procurement_closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    procurement_closed_by: Mapped[str | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     area: Mapped[Area] = relationship()
+    purchase_orders: Mapped[list[PurchaseOrder]] = relationship(back_populates="requirement", cascade="all, delete-orphan")
     __table_args__ = (
         CheckConstraint("budget_year BETWEEN 2020 AND 2100", name="ck_requirements_year"),
         CheckConstraint("amount > 0", name="ck_requirements_amount_positive"),
         CheckConstraint("version >= 1", name="ck_requirements_version_positive"),
         Index("ix_requirements_filters", "area_id", "budget_year", "account_code", "request_date"),
         Index("ix_requirements_active", "area_id", "deleted_at"),
+        Index("ix_requirements_procurement", "area_id", "budget_year", "procurement_status", "procurement_closed"),
+    )
+
+
+class PurchaseOrder(Base):
+    __tablename__ = "purchase_orders"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid_str)
+    requirement_id: Mapped[str] = mapped_column(ForeignKey("requirements.id", ondelete="CASCADE"), nullable=False, index=True)
+    order_number: Mapped[str] = mapped_column(String(120), nullable=False, index=True)
+    order_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
+    supplier: Mapped[str] = mapped_column(String(250), nullable=False)
+    amount: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    tender_reference: Mapped[str] = mapped_column(String(180), default="", nullable=False)
+    notes: Mapped[str] = mapped_column(Text, default="", nullable=False)
+    cas_reconciled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, index=True)
+    cas_reconciled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    cas_reconciled_by: Mapped[str | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    created_by: Mapped[str | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    updated_by: Mapped[str | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    requirement: Mapped[Requirement] = relationship(back_populates="purchase_orders")
+    __table_args__ = (
+        CheckConstraint("amount > 0", name="ck_purchase_orders_amount_positive"),
+        CheckConstraint("version >= 1", name="ck_purchase_orders_version_positive"),
+        Index("ix_purchase_orders_active_requirement", "requirement_id", "deleted_at"),
     )
 
 

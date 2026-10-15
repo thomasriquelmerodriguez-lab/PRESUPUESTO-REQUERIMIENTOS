@@ -43,6 +43,12 @@ class DashboardMetrics(ApiModel):
     total_new_requirements: int
     total_obligated_cas: int
     total_available: int
+    original_requested: int = 0
+    purchase_orders: int = 0
+    orders_pending_cas: int = 0
+    orders_reconciled_cas: int = 0
+    reservation_pending: int = 0
+    released_amount: int = 0
 
 
 class DashboardAccountBreakdown(ApiModel):
@@ -62,6 +68,8 @@ class DashboardMonth(ApiModel):
     label: str
     requirements_count: int
     requirements_amount: int
+    purchase_orders_count: int = 0
+    purchase_orders_amount: int = 0
 
 
 class DashboardAttention(ApiModel):
@@ -81,6 +89,12 @@ class DecisionDashboard(ApiModel):
     accounts_used: int
     total_budget: int
     total_requirements: int
+    total_original_requested: int = 0
+    total_purchase_orders: int = 0
+    total_orders_pending_cas: int = 0
+    total_orders_reconciled_cas: int = 0
+    total_reservation_pending: int = 0
+    total_released_amount: int = 0
     total_obligated_cas: int
     total_available: int
     committed_percent: float
